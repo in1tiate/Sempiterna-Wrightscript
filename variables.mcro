@@ -1,0 +1,269 @@
+// Called every time a save is loaded
+macro load_defaults
+
+flag msgwindow?
+goto handle_window
+goto skip_window
+
+// Display the message window if we need to
+label handle_window
+isnotempty _var_nt?
+nti $_var_nt
+isempty _var_nt?
+nti_clear
+label skip_window
+
+{update_config}
+
+endmacro
+
+macro clear_registers
+// internal math registers
+// Operations level
+set i_mat1
+// Interface level
+set i_mat2
+// internal data registers
+// Operations level
+set i_dat1
+// Interface level
+set i_dat2
+
+// accumulator
+set acc1
+set acc2
+set acc3
+set acc4
+
+// data
+set dat1
+set dat2
+set dat3
+
+// debug
+set dbg1
+set dbg2
+set dbg3
+
+// pointer
+set ptr1
+set ptr2
+set ptr3
+endmacro
+
+
+macro initialize_variables
+{init_game_defaults}
+{init_char_metadata}
+{init_text_colors}
+{init_globals}
+{reset_skiptext}
+{initialize_inventories}
+set _textbox_skipupdate false
+set _textbox_show_button true
+endmacro
+
+// Shouldn't need to do this
+// but safer if we do it anyway
+{clear_present_flags}
+
+macro init_game_defaults
+set _software_version 0.0.0
+{init_defaults}
+{init_court_record_settings}
+{set_ui_theme}
+set _bigbutton_bg $_bg_main
+set _cr_button false
+
+#Defaults
+set _nt_text_y 1
+set _nt_y 116
+set _nt_middle_x 9
+set _font_nt invisible1.ttf
+set _font_nt_size 8
+set _font_tb igiari-cyrillic.ttf
+set _font_tb_size 16
+set _textbox_wrap false
+set _textbox_lines 3
+set _textbox_bg general/textbox_blank
+
+# Effectively disable blinkspeed mechanic
+# (our assets have blink loops built in)
+set _blinkspeed_global 0 0
+
+# initialize courtroom variables
+set _sscroll_courtroom jfe
+init_sscroll
+
+endmacro
+
+macro init_globals
+importvars conf.dat
+importvars ext.dat
+importvars stats.dat
+
+// Get default values if user has not set up any
+isempty conf_skiptext?
+set conf_skiptext 0
+isempty conf_skipintros?
+set conf_skipintros 0
+isempty conf_ghost?
+set conf_ghost 0
+isempty conf_penalties?
+set conf_penalties 0
+isempty conf_music_copyright?
+set conf_music_copyright 0
+endmacro
+
+macro init_text_colors
+
+set color_b 6BC6F7
+set color_g 00F700
+set color_o F77339
+set color_r F70039
+set color_w FFFFFF
+set ctype {type}{center}{c g}{spd2}
+set c_plock {c o}{center}{spd3}{sound/nothing}
+
+endmacro
+
+macro init_char_metadata
+set char_abels_defsound blipfemale
+set char_athenaco_defsound blipfemale
+set char_athena_defsound blipfemale
+set char_ema_defsound blipfemale
+set char_franziska_defsound blipfemale
+set char_franziskawit_defsound blipfemale
+set char_sally_defsound blipfemale
+set char_trucy_defsound blipfemale
+set char_trucyco_defsound blipfemale
+endmacro
+
+macro set_ui_theme
+set _bigbutton_theme $1
+joinvar _bigbutton_img general/ui $_bigbutton_theme /buttonpress
+joinvar _bigbutton_cross general/ui $_bigbutton_theme /cross_exam_buttons
+joinvar _bigbutton_comeback general/ui $_bigbutton_theme /button-comeback-ani
+joinvar _bigbutton_leave general/ui $_bigbutton_theme /button-leave-ani
+setvar _bg_main bg/main2
+joinvar _bg_talk bg/talk $_bigbutton_theme
+setvar _bg_move bg/move
+endmacro
+
+macro reset_skiptext
+set _textbox_allow_skip false
+is conf_skiptext 1?
+set _textbox_allow_skip true
+endmacro
+
+macro update_config
+importvars conf.dat
+{reset_skiptext}
+endmacro
+
+macro export_stats_storage
+// Pain.
+setvar stat_1_badges 0
+setvar stat_2_badges 0
+setvar stat_3_badges 0
+setvar stat_1_retries 0
+setvar stat_2_retries 0
+setvar stat_3_retries 0
+setvar stat_1_pixelhunter 0
+setvar stat_2_pixelhunter 0
+setvar stat_3_pixelhunter 0
+setvar stat_1_afterlasts 0
+setvar stat_2_afterlasts 0
+setvar stat_3_afterlasts 0
+setvar stat_1_oopsies 0
+setvar stat_2_oopsies 0
+setvar stat_3_oopsies 0
+setvar stat_1_daredevil 0
+setvar stat_2_daredevil 0
+setvar stat_3_daredevil 0
+setvar stat_1_wanderer 0
+setvar stat_2_wanderer 0
+setvar stat_3_wanderer 0
+exportvars Turnabout_Buyback/stats.dat stat_1_badges stat_1_retries stat_1_pixelhunter stat_1_afterlasts stat_1_oopsies stat_1_daredevil stat_1_wanderer
+exportvars Turnabout_Backraise/stats.dat stat_2_badges stat_2_retries stat_2_pixelhunter stat_2_afterlasts stat_2_oopsies stat_2_daredevil stat_2_wanderer
+exportvars Turnabout_Snake-Eyes/stats.dat stat_3_badges stat_3_retries stat_3_pixelhunter stat_3_afterlasts stat_3_oopsies stat_3_daredevil stat_3_wanderer
+endmacro
+
+macro export_global_vars
+// Only way to make sure all cases have the same variables is to export them to each case individually
+// This is a little dumb, but it's necessary to allow cases (which are really just games) to share flags and data.
+// This runs every time the title screen is displayed, ensuring all cases have the same information.
+// Note that we DO NOT export stats. Each case tracks stats individually.
+// For how stats work, see update_stats
+exportvars ext.dat fun
+exportvars A_Debug_Turnabout/ext.dat fun
+exportvars Turnabout_Buyback/ext.dat fun
+exportvars Turnabout_Backraise/ext.dat fun
+exportvars Turnabout_Snake-Eyes/ext.dat fun
+exportvars Turnabout_for_Eternity/ext.dat fun
+exportvars Office_Demo/ext.dat fun
+
+exportvars conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+exportvars A_Debug_Turnabout/conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+exportvars Turnabout_Buyback/conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+exportvars Turnabout_Backraise/conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+exportvars Turnabout_Snake-Eyes/conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+exportvars Turnabout_for_Eternity/conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+exportvars Office_Demo/conf.dat conf_skiptext conf_skipintros conf_penalties conf_music_copyright conf_ghost conf_software_debug conf_software_demo
+endmacro
+
+macro update_stats
+// First, set up storage variables for each stat.
+
+// Number of times the player presented their badge during investigations
+setvar stat_123_badges 0
+// Number of times the player used "retry this scene" after a game over
+setvar stat_123_retries 0
+// Number of times the player looked at nothing and got a generic message
+setvar stat_123_pixelhunter 0
+// Number of times the player advanced past the last statement of a testimony and got the "afterlast" dialogue
+setvar stat_123_afterlasts 0
+// Number of times the player presented incorrect evidence during a trial
+setvar stat_123_oopsies 0
+// Number of times the player declined to create a chapter save
+setvar stat_123_daredevil 0
+// Number of times the player used the "Move" command in investigations
+setvar stat_123_wanderer 0
+
+importvars Turnabout_Buyback/stats.dat
+importvars Turnabout_Backraise/stats.dat
+importvars Turnabout_Snake-Eyes/stats.dat
+
+// Then add the stats to the stored variables
+addvar stat_123_badges $stat_1_badges
+addvar stat_123_badges $stat_2_badges
+addvar stat_123_badges $stat_3_badges
+
+addvar stat_123_retries $stat_1_retries
+addvar stat_123_retries $stat_2_retries
+addvar stat_123_retries $stat_3_retries
+
+addvar stat_123_pixelhunter $stat_1_pixelhunter
+addvar stat_123_pixelhunter $stat_2_pixelhunter
+addvar stat_123_pixelhunter $stat_3_pixelhunter
+
+addvar stat_123_afterlasts $stat_1_afterlasts
+addvar stat_123_afterlasts $stat_2_afterlasts
+addvar stat_123_afterlasts $stat_3_afterlasts
+
+addvar stat_123_oopsies $stat_1_oopsies
+addvar stat_123_oopsies $stat_2_oopsies
+addvar stat_123_oopsies $stat_3_oopsies
+
+addvar stat_123_daredevil $stat_1_daredevil
+addvar stat_123_daredevil $stat_2_daredevil
+addvar stat_123_daredevil $stat_3_daredevil
+
+addvar stat_123_wanderer $stat_1_wanderer
+addvar stat_123_wanderer $stat_2_wanderer
+addvar stat_123_wanderer $stat_3_wanderer
+
+// Finally, export the stored variables to case 4's ext2.
+exportvars Turnabout_for_Eternity/ext2.dat stat_123_badges stat_123_retries stat_123_pixelhunter stat_123_afterlasts stat_123_oopsies stat_123_daredevil stat_123_wanderer
+
+endmacro

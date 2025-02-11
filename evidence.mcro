@@ -1,0 +1,135 @@
+#@ Adds an evidence to the court record and shows an animation to the player about that evidence.
+#$_ev - evidence id to reveal and add to court record
+#$_name - the name of the evidence to show to the player
+# Original macro by saluk
+# Modified by DeathByAutoscroll & in1tiate
+# Usage:
+# set _ev badge
+# set _name Badge
+# (optional) set _msg yeeted into the Court Record.
+# addevanim
+macro addevanim
+{disable_saveload}
+{ITEM_GET_PROP $2 data dat3}
+joinvar datapath ev/data/ $dat3
+
+{ITEM_GET_PROP $2 nameplate dat3}
+joinvar namepath ev/name/ $dat3
+
+{ITEM_GET_PROP $2 img dat3}
+joinvar icnpath ev/ $dat3
+
+obj general/ui/record/evanim x=240 y=16 name=animbg z=10
+obj $datapath x=337 y=40 name=animdata z=11
+obj $namepath x=346 y=24 name=animname z=11
+obj $icnpath x=248 y=24 name=animicn z=11
+scroll x=-240 speed=10 name=animbg nowait
+scroll x=-240 speed=10 name=animdata nowait
+scroll x=-240 speed=10 name=animname nowait
+scroll x=-240 speed=10 name=animicn nowait
+pause 1
+nt
+{add_item $1 $2}
+{nti_clear}
+set _textbox_skipupdate true
+set _textbox_allow_skip false
+{ITEM_GET_PROP $2 name _name}
+sfx evidence/added
+isnotempty _msg custom
+goto default
+label custom
+set _textbox_wrap true
+"{sound blipmale}{spd0.8}{c b}{$_name} {$_msg}{p50}"
+set _textbox_wrap false
+set _msg
+goto afterText
+label default
+"{sound blipmale}{spd0.8}{c b}{$_name} added to{n}the Court Record.{p50}"
+label afterText
+{ANIM_RECORD_GETEVIDENCE $1 $2}
+pause 120
+delete name=getev_clickmask
+gui Button {ANIM_RECORD_FINISH_GETEV} x=0 y=192 z=10 name=getev_clickmask graphic=fg/empty hotkey=enter_down
+gui Wait
+sfx Bloop
+msgwindow_hide
+"{sound none}{next}"
+set _textbox_allow_skip true
+scroll x=-480 speed=10 name=animbg nowait
+scroll x=-480 speed=10 name=animdata nowait
+scroll x=-480 speed=10 name=animname nowait
+scroll x=-480 speed=10 name=animicn nowait
+set _textbox_skipupdate false
+{ANIM_RECORD_CLOSE}
+set _textbox_show_button true
+obj $temp_bigbg2 y=192 z=2 name=fakebg
+{ANIM_LOCALMENU_TALK_BEGIN}
+delete name=fakebg
+"{sound none}{next}"
+delflag record_noback
+delflag record_getev
+set force_inventory
+{clear_presentflags}
+delete name=getev_clickmask
+delete name=animbg
+delete name=animdata
+delete name=animname
+delete name=animicn
+{enable_court_record_button}
+{show_court_record_button}
+{enable_saveload}
+endmacro
+
+macro swapevl
+delete name=ev suppress
+delete name=ev_frame suppress
+ev frame x=11 y=11 name=ev_frame
+ev $1 x=14 y=14 name=ev
+endmacro
+
+macro swapevr
+delete name=ev suppress
+delete name=ev_frame suppress
+ev frame x=171 y=11 name=ev_frame
+ev $1 x=174 y=14 name=ev
+endmacro
+
+#@ pops up en evidence icon on the left side of the screen
+macro showevl
+sfx evidence/ev.ogg
+obj general/evidence/showevl name=fg
+pause 13
+ev frame x=11 y=11 name=ev_frame
+ev $_ev x=14 y=14 name=ev
+delete name=fg
+endmacro
+
+#@ makes the upper left evidence icon pop away
+macro hideevl
+sfx evidence/ev.ogg
+delete name=ev
+delete name=ev_frame
+obj general/evidence/hideevl x=0 y=0 name=fg
+pause 13
+delete name=fg
+endmacro
+
+#@ pops up en evidence icon on the right side of the screen
+macro showevr
+sfx evidence/ev.ogg
+obj general/evidence/showevr x=0 y=0 name=fg nowait
+pause 13
+ev frame x=171 y=11 name=ev_frame
+ev $_ev x=174 y=14 name=ev
+delete name=fg
+endmacro
+
+#@ makes the upper right evidence icon pop away
+macro hideevr
+sfx evidence/ev.ogg
+delete name=ev
+delete name=ev_frame
+obj general/evidence/hideevr x=0 y=0 name=fg
+pause 13
+delete name=fg
+endmacro

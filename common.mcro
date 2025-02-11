@@ -1,0 +1,155 @@
+# common script macros
+
+#usage: shout [shout] [character]
+macro shout
+setvar shout_char $2
+joinvar shout_sfx $2 / $1
+joinvar shout_gfx general/shouts/ $1
+isempty shout_char ?
+setvar shout_sfx objection
+{msgwindow_hide}
+obj $shout_gfx z=9 name=interject
+sfx $shout_sfx
+pause 2
+obj bg/white z=9 name=flash
+pause 2
+delete name=flash
+pause 30
+delete name=interject
+pause 10
+endmacro
+
+# used for integrating shouts into animations
+macro shout_nowait
+setvar shout_char $2
+joinvar shout_sfx $2 / $1
+joinvar shout_gfx general/shouts/ $1
+isempty shout_char ?
+setvar shout_sfx objection
+{msgwindow_hide}
+obj $shout_gfx z=9 name=interject
+sfx $shout_sfx
+timer 30 shout_nowait_end
+endmacro
+
+macro shout_nowait_end
+delete name=interject
+endmacro
+
+#usage: shoutdrama [shout] [character]
+# behaves same as shout, but flashes twice
+# use only for very shocking moments
+macro shoutdrama
+setvar shout_char $2
+joinvar shout_sfx $2 / $1
+joinvar shout_gfx general/shouts/ $1
+isempty shout_char ?
+setvar shout_sfx objection
+{msgwindow_hide}
+obj $shout_gfx z=9 name=interject
+sfx $shout_sfx
+pause 2
+obj bg/white z=9 name=flash
+pause 2
+delete name=flash
+pause 8
+obj bg/white z=9 name=flash
+pause 2
+delete name=flash
+pause 27
+delete name=interject
+pause 10
+endmacro
+
+macro zoomin
+joinvar zoom_side zoom/ $1
+bg $zoom_side
+char $2 e=zoom
+endmacro
+
+
+macro give_accolade
+setvar accolade_id $1
+joinvar accolade_path ev/40/ $1
+joinvar accolade_namepath general/accolades/ $1
+joinvar accolade_id acc_ $accolade_id
+setflag $accolade_id
+obj general/accolades/accolade_anim x=256 y=0 z=8 name=accolade_anim
+obj $accolade_path x=258 y=2 z=7 name=accolade_icon
+obj $accolade_namepath x=301 y=20 z=8 name=accolade_name
+sfx accolade
+scroll name=accolade_icon x=-145 speed=10 nowait
+scroll name=accolade_name x=-145 speed=10 nowait
+scroll name=accolade_anim x=-145 speed=10
+pause 120
+scroll name=accolade_icon x=145 speed=10 nowait
+scroll name=accolade_name x=145 speed=10 nowait
+scroll name=accolade_anim x=145 speed=10
+pause 1
+delete name=accolade_icon
+delete name=accolade_name
+delete name=accolade_anim
+endmacro
+
+# perceive animation
+macro perceive_kokoro
+screenshot art/bg/minuku width=256 height=192 x=0 y=0 rwidth=256 rheight=192
+obj bg/white name=min_flash z=10
+pause 2
+bg minuku name=min_background z=-2
+obj bg/minuku z=-1 name=min_foreground
+fade name=min_foreground start=100 end=0 speed=1 nowait
+invert value=1 name=min_background
+invert value=1 name=min_foreground
+delete name=min_flash
+sfx kokoro
+zoom mag=0.3 frames=66 name=min_foreground nowait
+bg minuku stack z=-2 name=min_normalbg
+fade name=min_normalbg in speed=2 nowait
+pause 66
+zoom mag=-0.3 frames=54 name=min_foreground nowait
+pause 54
+delete name=min_foreground
+endmacro
+
+# case select animations
+macro ANIM_SELECTCASE
+joinvar keybg key/case $__case_number
+bg $keybg
+set temp1 py
+flag godotwright?
+set temp1 gd
+joinvar temp2 general/ui/casemenu/ $temp1
+joinvar btpath $temp2 / $__case_number
+obj $btpath name=ani1 x=40 y=259
+sfx Confirm
+pause 20
+scroll name=ani1 y=-192 speed=10
+pause 20
+delete name=ani1
+pause 3
+obj $btpath name=ani1 x=40 y=67
+pause 3
+delete name=ani1
+pause 3
+obj $btpath name=ani1 x=40 y=67
+pause 3
+delete name=ani1
+pause 3
+obj $btpath name=ani1 x=40 y=67
+pause 3
+delete name=ani1
+pause 3
+obj $btpath name=ani1 x=40 y=67
+pause 3
+delete name=ani1
+pause 3
+obj $btpath name=ani1 x=40 y=67
+pause 3
+delete name=ani1
+pause 3
+obj $btpath name=ani1 x=40 y=67
+pause 50
+delete name=ani1
+bg bigblack stack fade
+endmacro

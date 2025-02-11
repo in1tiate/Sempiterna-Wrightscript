@@ -1,0 +1,564 @@
+### LOCALMENU2_EXT.MCRO ###
+### Extensions to Localmenu2 ###
+### By in1tiate ###
+
+macro handle_scriptfade
+noflag scriptfade?
+goto dont_handle
+obj bg/bigblack z=10 name=scriptfader
+fade name=scriptfader out speed=8
+delete name=scriptfader
+delflag scriptfade
+label dont_handle
+endmacro
+
+macro bind_movemenu2
+set _mopt_selected 0
+gui Button {move_upkey} name=mo_upkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_up
+gui Button {move_downkey} name=mo_downkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_down
+endmacro
+
+macro unbind_movemenu2
+delete name=mo_upkey_handler
+delete name=mo_downkey_handler
+endmacro
+
+macro move_upkey
+is _mopt_selected 4?
+mo3select
+is _mopt_selected 3?
+mo2select
+is _mopt_selected 2?
+mo1select
+is _mopt_selected 0?
+mo1select
+endmacro
+
+macro move_downkey
+is_ex _mopt_selected == 3 AND _move_opts > 3?
+mo4select
+is_ex _mopt_selected == 2 AND _move_opts > 2?
+mo3select
+is_ex _mopt_selected == 1 AND _move_opts > 1?
+mo2select
+is _mopt_selected 0?
+mo1select
+endmacro
+
+macro setup_move_menu
+delete name=delaymasker suppress
+setflag menu_move
+set _bigbutton_bg bg/move
+# variables:
+# _move_opts - set to number of move options, maximum is 4
+# _moX_art - X is number in list, set to filename of background
+# _moX_static - set to 1 to use tv static. don't use this on the first option!
+# _moX_target - name of script this option should jump to
+# make sure these are set before calling
+setflag lmx_moveloop
+obj bg/blackborderline name=tempbg y=192 z=4
+fade name=tempbg in speed=10
+obj bg/move name=movebg y=192 z=3
+obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=384 z=6
+scroll name=fback_btn y=-32 speed=4 nowait
+is_ex _move_opts == 1?
+goto _one_move_opt
+is_ex _move_opts == 2?
+goto _two_move_opt
+is_ex _move_opts == 3?
+goto _three_move_opt
+is_ex _move_opts == 4?
+goto _four_move_opt
+
+goto _invalid_move_opt
+
+label _one_move_opt
+setvar mo1_y 269
+_setup_mo1
+{ANIM_LOCALMENU_MOVE_SETUP_1}
+goto _finish_move
+
+label _two_move_opt
+setvar mo1_y 241
+setvar mo2_y 297
+_setup_mo1
+_setup_mo2
+{ANIM_LOCALMENU_MOVE_SETUP_2}
+goto _finish_move
+
+label _three_move_opt
+setvar mo1_y 229
+setvar mo2_y 269
+setvar mo3_y 309
+_setup_mo1
+_setup_mo2
+_setup_mo3
+{ANIM_LOCALMENU_MOVE_SETUP_3}
+goto _finish_move
+
+label _four_move_opt
+setvar mo1_y 221
+setvar mo2_y 253
+setvar mo3_y 285
+setvar mo4_y 317
+_setup_mo1
+_setup_mo2
+_setup_mo3
+_setup_mo4
+{ANIM_LOCALMENU_MOVE_SETUP_4}
+goto _finish_move
+
+label _invalid_move_opt
+delete name=tempbg
+delete name=movebg
+label _finish_move
+
+gui Button {exit_move_menu} name=back_btn x=0 y=352 z=6 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+delete name=fback_btn
+# First move option is always considered "selected" when setting up menu
+setvar _mo_selected $mo1_thumbpath-out
+bind_movemenu2
+endmacro
+
+# when the user hits "back"
+macro exit_move_menu
+delflag menu_move
+sfx Cancel
+delete name=back_btn
+obj general/DS-PyWrightButtons/key_borderless_back_high name=back_btn x=0 y=352 z=6
+pause 10
+scroll name=back_btn y=40 speed=10
+delete name=back_btn
+reset_move_buttons
+{ANIM_LOCALMENU_MOVE_BACK}
+delflag lmx_moveloop
+set _bigbutton_bg bg/main2
+unbind_movemenu2
+endmacro
+
+# when the user selects a new location
+macro finish_move_menu
+delflag menu_move
+delete name=sel_left suppress
+delete name=sel_right suppress
+setflag scriptfade
+bg bigblack stack z=100 name=scriptfader
+fade name=scriptfader in speed=8
+music none
+delete name=movebg
+delete name=tempbg suppress
+delete name=thumb suppress
+delete name=back_btn suppress
+delete name=scriptfader
+bg bigblack z=100
+{clear_localmenu2_ext_vars}
+{unbind_movemenu2}
+set _bigbutton_bg bg/main2
+endmacro
+
+macro reset_move_buttons
+delete name=sel_left suppress
+delete name=sel_right suppress
+delete name=mo1_btn suppress
+delete name=mo2_btn suppress
+delete name=mo3_btn suppress
+delete name=mo4_btn suppress
+is_ex _move_opts > 0?
+gui Button {mo1select} x=109 y=$mo1_y z=5 name=mo1_btn graphic=$mo1_btnpath
+is_ex _move_opts > 1?
+gui Button {mo2select} x=109 y=$mo2_y z=5 name=mo2_btn graphic=$mo2_btnpath
+is_ex _move_opts > 2?
+gui Button {mo3select} x=109 y=$mo3_y z=5 name=mo3_btn graphic=$mo3_btnpath
+is_ex _move_opts > 3?
+gui Button {mo4select} x=109 y=$mo4_y z=5 name=mo4_btn graphic=$mo4_btnpath
+endmacro
+
+macro mo1select
+set _mopt_selected 1
+reset_move_buttons
+delete name=mo1_btn
+gui Button {mo1target} x=109 y=$mo1_y name=mo1_btn graphic=$mo1_btnpath z=5 hotkey=enter_down
+delete name=thumb
+obj $mo1_thumbpath name=thumb y=192 z=4
+sfx Select
+obj general/ui/move/sel_left x=107 y=$mo1_y z=5 name=sel_left
+obj general/ui/move/sel_right x=241 y=$mo1_y z=5 name=sel_right
+setvar _mo_selected $mo1_thumbpath-out
+endmacro
+
+macro mo1target
+ANIM_LOCALMENU_MOVE_MO1_CONFIRM
+finish_move_menu
+script $_mo1_target
+endmacro
+
+macro mo2select
+set _mopt_selected 2
+reset_move_buttons
+delete name=mo2_btn
+gui Button {mo2target} x=109 y=$mo2_y name=mo2_btn graphic=$mo2_btnpath hotkey=enter_down
+delete name=thumb
+obj $mo2_thumbpath name=thumb y=192 z=4
+sfx Select
+obj general/ui/move/sel_left x=107 y=$mo2_y z=5 name=sel_left
+obj general/ui/move/sel_right x=241 y=$mo2_y z=5 name=sel_right
+setvar _mo_selected $mo2_thumbpath-out
+endmacro
+
+macro mo2target
+ANIM_LOCALMENU_MOVE_MO2_CONFIRM
+finish_move_menu
+script $_mo2_target
+endmacro
+
+macro mo3select
+set _mopt_selected 3
+reset_move_buttons
+delete name=mo3_btn
+gui Button {mo3target} x=109 y=$mo3_y name=mo3_btn graphic=$mo3_btnpath hotkey=enter_down
+delete name=thumb
+obj $mo3_thumbpath name=thumb y=192 z=4
+sfx Select
+obj general/ui/move/sel_left x=107 y=$mo3_y z=5 name=sel_left
+obj general/ui/move/sel_right x=241 y=$mo3_y z=5 name=sel_right
+setvar _mo_selected $mo3_thumbpath-out
+endmacro
+
+macro mo3target
+ANIM_LOCALMENU_MOVE_MO3_CONFIRM
+finish_move_menu
+script $_mo3_target
+endmacro
+
+macro mo4select
+set _mopt_selected 4
+reset_move_buttons
+delete name=mo4_btn
+gui Button {mo4target} x=109 y=$mo4_y name=mo4_btn graphic=$mo4_btnpath hotkey=enter_down
+delete name=thumb
+obj $mo4_thumbpath name=thumb y=192 z=4
+sfx Select
+obj general/ui/move/sel_left x=107 y=$mo4_y z=5 name=sel_left
+obj general/ui/move/sel_right x=241 y=$mo4_y z=5 name=sel_right
+setvar _mo_selected $mo4_thumbpath-out
+endmacro
+
+macro mo4target
+ANIM_LOCALMENU_MOVE_MO4_CONFIRM
+finish_move_menu
+script $_mo4_target
+endmacro
+
+macro _setup_mo1
+joinvar mo1_thumbpath bg/thumb/ $_mo1_art
+is_ex _mo1_static == 1?
+setvar mo1_thumbpath bg/thumb/static
+joinvar mo1_thumbpath-in $mo1_thumbpath -in
+joinvar mo1_thumbpath-out $mo1_thumbpath -out
+joinvar mo1_btnpath general/ui/move/ $_mo1_art
+joinvar mo1_btnpath-in $mo1_btnpath -in
+joinvar mo1_btnpath-out $mo1_btnpath -out
+endmacro
+
+macro _setup_mo2
+joinvar mo2_thumbpath bg/thumb/ $_mo2_art
+is_ex _mo2_static == 1?
+setvar mo2_thumbpath bg/thumb/static
+joinvar mo2_thumbpath-out $mo2_thumbpath -out
+joinvar mo2_btnpath general/ui/move/ $_mo2_art
+joinvar mo2_btnpath-in $mo2_btnpath -in
+joinvar mo2_btnpath-out $mo2_btnpath -out
+endmacro
+
+macro _setup_mo3
+joinvar mo3_thumbpath bg/thumb/ $_mo3_art
+is_ex _mo3_static == 1?
+setvar mo3_thumbpath bg/thumb/static
+joinvar mo3_thumbpath-out $mo3_thumbpath -out
+joinvar mo3_btnpath general/ui/move/ $_mo3_art
+joinvar mo3_btnpath-in $mo3_btnpath -in
+joinvar mo3_btnpath-out $mo3_btnpath -out
+endmacro
+
+macro _setup_mo4
+joinvar mo4_thumbpath bg/thumb/ $_mo4_art
+is_ex _mo4_static == 1?
+setvar mo4_thumbpath bg/thumb/static
+joinvar mo4_thumbpath-out $mo4_thumbpath -out
+joinvar mo4_btnpath general/ui/move/ $_mo4_art
+joinvar mo4_btnpath-in $mo4_btnpath -in
+joinvar mo4_btnpath-out $mo4_btnpath -out
+endmacro
+
+### TALK MENU ###
+
+macro clear_localmenu2_ext_vars
+set _to1_mark
+set _to2_mark
+set _to3_mark
+set _to4_mark
+set presented
+endmacro
+
+macro bind_talkmenu2
+set _to_selected 0
+gui Button {talk_upkey} name=to_upkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_up
+gui Button {talk_downkey} name=to_downkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_down
+endmacro
+
+macro unbind_talkmenu2
+delete name=to_upkey_handler
+delete name=to_downkey_handler
+endmacro
+
+macro talk_upkey
+is _to_selected 4?
+to3select
+is _to_selected 3?
+to2select
+is _to_selected 2?
+to1select
+is _to_selected 0?
+to1select
+endmacro
+
+macro talk_downkey
+is_ex _to_selected == 3 AND _talk_opts > 3?
+to4select
+is_ex _to_selected == 2 AND _talk_opts > 2?
+to3select
+is_ex _to_selected == 1 AND _talk_opts > 1?
+to2select
+is _to_selected 0?
+to1select
+endmacro
+
+macro setup_talk_menu
+delete name=delaymasker suppress
+setflag menu_talk
+# variables:
+# _talk_opts - set to number of talk options, maximum is 4
+# _toX_id - X is number in list, set to filename of background
+# _toX_target - name of label this option should jump to
+# _toX_mark - empty, "check," or "lock" for the various labels
+# make sure these are set before calling
+set _bigbutton_bg $_bg_talk
+setflag lmx_talkloop
+obj bg/blackborderline name=tempbg y=192 z=4
+fade name=tempbg in speed=10
+obj $_bg_talk name=talkbg y=192 z=0
+obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=384 z=6
+scroll name=fback_btn y=-32 speed=4 nowait
+is_ex _talk_opts == 1?
+goto _one_talk_opt
+is_ex _talk_opts == 2?
+goto _two_talk_opt
+is_ex _talk_opts == 3?
+goto _three_talk_opt
+is_ex _talk_opts == 4?
+goto _four_talk_opt
+
+goto _invalid_talk_opt
+
+label _one_talk_opt
+setvar to1_y 275
+setvar to1_y_alt 269
+_setup_to1
+{ANIM_LOCALMENU_TALK_SETUP_1}
+goto _finish_talk
+
+label _two_talk_opt
+setvar to1_y 247
+setvar to2_y 303
+setvar to1_y_alt 241
+setvar to2_y_alt 297
+_setup_to1
+_setup_to2
+{ANIM_LOCALMENU_TALK_SETUP_2}
+goto _finish_talk
+
+label _three_talk_opt
+setvar to1_y 235
+setvar to2_y 275
+setvar to3_y 315
+setvar to1_y_alt 229
+setvar to2_y_alt 269
+setvar to3_y_alt 309
+_setup_to1
+_setup_to2
+_setup_to3
+{ANIM_LOCALMENU_TALK_SETUP_3}
+goto _finish_talk
+
+label _four_talk_opt
+setvar to1_y 227
+setvar to2_y 259
+setvar to3_y 291
+setvar to4_y 323
+setvar to1_y_alt 221
+setvar to2_y_alt 253
+setvar to3_y_alt 285
+setvar to4_y_alt 317
+_setup_to1
+_setup_to2
+_setup_to3
+_setup_to4
+{ANIM_LOCALMENU_TALK_SETUP_4}
+goto _finish_talk
+
+label _invalid_talk_opt
+delete name=tempbg
+delete name=talkbg
+
+label _finish_talk
+{ANIM_LOCALMENU_TALK_MARKS}
+gui Button {exit_talk_menu} name=back_btn x=0 y=352 z=6 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+delete name=fback_btn
+bind_talkmenu2
+endmacro
+
+# when the user hits "back"
+macro exit_talk_menu
+delflag menu_talk
+sfx Cancel
+delete name=back_btn
+obj general/DS-PyWrightButtons/key_borderless_back_high name=back_btn x=0 y=352 z=6
+//pause 10
+scroll name=back_btn y=40 speed=5 nowait
+reset_talk_buttons
+{ANIM_LOCALMENU_TALK_BACK}
+pause 4
+delete name=back_btn
+delflag lmx_talkloop
+set _bigbutton_bg bg/main2
+unbind_talkmenu2
+endmacro
+
+# when the user selects a talk option
+macro finish_talk_menu
+delflag menu_talk
+delete name=tempbg suppress
+delete name=sel_left suppress
+delete name=sel_right suppress
+delete name=back_btn suppress
+delete name=scriptfader suppress
+delflag lmx_talkloop
+unbind_talkmenu2
+endmacro
+
+macro reset_talk_buttons
+delete name=sel_left suppress
+delete name=sel_right suppress
+delete name=to1_btn suppress
+delete name=to2_btn suppress
+delete name=to3_btn suppress
+delete name=to4_btn suppress
+is_ex _talk_opts > 0?
+gui Button {to1select} x=10 y=$to1_y z=5 name=to1_btn graphic=$to1_btnpath
+is_ex _talk_opts > 1?
+gui Button {to2select} x=10 y=$to2_y z=5 name=to2_btn graphic=$to2_btnpath
+is_ex _talk_opts > 2?
+gui Button {to3select} x=10 y=$to3_y z=5 name=to3_btn graphic=$to3_btnpath
+is_ex _talk_opts > 3?
+gui Button {to4select} x=10 y=$to4_y z=5 name=to4_btn graphic=$to4_btnpath
+endmacro
+
+macro to1select
+set _to_selected 1
+reset_talk_buttons
+delete name=to1_btn
+gui Button {to1target} x=10 y=$to1_y name=to1_btn graphic=$to1_btnpath z=5 hotkey=enter_down
+sfx Select
+obj general/ui/talk/sel_left x=8 y=$to1_y_alt z=5 name=sel_left
+obj general/ui/talk/sel_right x=142 y=$to1_y_alt z=5 name=sel_right
+endmacro
+
+macro to1target
+delflag menu_talk
+ANIM_LOCALMENU_TALK_TO1_CONFIRM
+finish_talk_menu
+set _talk_target $_to1_target
+obj $_bigbutton_comeback name=button-easein y=192 z=4
+pause 9
+endmacro
+
+macro to2select
+set _to_selected 2
+reset_talk_buttons
+delete name=to2_btn
+gui Button {to2target} x=10 y=$to2_y name=to2_btn graphic=$to2_btnpath hotkey=enter_down
+sfx Select
+obj general/ui/talk/sel_left x=8 y=$to2_y_alt z=5 name=sel_left
+obj general/ui/talk/sel_right x=142 y=$to2_y_alt z=5 name=sel_right
+endmacro
+
+macro to2target
+delflag menu_talk
+ANIM_LOCALMENU_TALK_TO2_CONFIRM
+finish_talk_menu
+set _talk_target $_to2_target
+obj $_bigbutton_comeback name=button-easein y=192 z=4
+pause 9
+endmacro
+
+macro to3select
+set _to_selected 3
+reset_talk_buttons
+delete name=to3_btn
+gui Button {to3target} x=10 y=$to3_y name=to3_btn graphic=$to3_btnpath hotkey=enter_down
+sfx Select
+obj general/ui/talk/sel_left x=8 y=$to3_y_alt z=5 name=sel_left
+obj general/ui/talk/sel_right x=142 y=$to3_y_alt z=5 name=sel_right
+endmacro
+
+macro to3target
+delflag menu_talk
+ANIM_LOCALMENU_TALK_TO3_CONFIRM
+finish_talk_menu
+set _talk_target $_to3_target
+obj $_bigbutton_comeback name=button-easein y=192 z=4
+pause 9
+endmacro
+
+macro to4select
+set _to_selected 4
+reset_talk_buttons
+delete name=to4_btn
+gui Button {to4target} x=10 y=$to4_y name=to4_btn graphic=$to4_btnpath hotkey=enter_down
+sfx Select
+obj general/ui/talk/sel_left x=8 y=$to4_y_alt z=5 name=sel_left
+obj general/ui/talk/sel_right x=142 y=$to4_y_alt z=5 name=sel_right
+endmacro
+
+macro to4target
+delflag menu_talk
+ANIM_LOCALMENU_TALK_TO4_CONFIRM
+finish_talk_menu
+set _talk_target $_to4_target
+obj $_bigbutton_comeback name=button-easein y=192 z=4
+pause 9
+endmacro
+
+macro _setup_to1
+joinvar to1_btnpath general/ui/talk/ $_to1_id
+joinvar to1_btnpath-in $to1_btnpath -in
+joinvar to1_btnpath-out $to1_btnpath -out
+endmacro
+
+macro _setup_to2
+joinvar to2_btnpath general/ui/talk/ $_to2_id
+joinvar to2_btnpath-in $to2_btnpath -in
+joinvar to2_btnpath-out $to2_btnpath -out
+endmacro
+
+macro _setup_to3
+joinvar to3_btnpath general/ui/talk/ $_to3_id
+joinvar to3_btnpath-in $to3_btnpath -in
+joinvar to3_btnpath-out $to3_btnpath -out
+endmacro
+
+macro _setup_to4
+joinvar to4_btnpath general/ui/talk/ $_to4_id
+joinvar to4_btnpath-in $to4_btnpath -in
+joinvar to4_btnpath-out $to4_btnpath -out
+endmacro

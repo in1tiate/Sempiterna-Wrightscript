@@ -1,0 +1,101 @@
+macro crossexam
+setflag crossexam_active
+endmacro
+
+
+
+### BELOW IS THE OLD STUFF
+
+### fake ui setup for crossexams
+macro setup_crossui
+obj general/ui/press_scrollon name=press_scrollon y=192 z=6
+obj general/ui/present_scrollon name=present_scrollon y=192 x=164 z=6
+pause 5
+delete name=press_scrollon
+delete name=present_scrollon
+obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+endmacro
+
+macro clear_crossui
+delete name=fbutton_press suppress
+delete name=fbutton_present suppress
+obj general/ui/press_scrolloff name=press_scrolloff y=192 z=6
+obj general/ui/present_scrolloff name=present_scrolloff y=192 x=164 z=6
+pause 5
+delete name=press_scrolloff
+delete name=present_scrolloff
+endmacro
+
+macro start_faderesume
+obj general/DS-PyWrightButtons/key_record name=fbutton_record y=192 x=154 z=6
+obj bg/black z=9 name=dramafadeobj fade
+setflag fadein
+penalty
+endmacro
+
+macro finish_faderesume
+fade out name=dramafadeobj speed=10
+delete name=dramafadeobj
+delflag fadein
+resume_crossui
+endmacro
+
+macro resume_crossui
+_hide_fake_cr_button
+obj bg/main2 z=5 name=tempbg y=192
+delete name=fbutton_record suppress
+obj general/ui/record_scrolloff name=record_scrolloff y=192 z=6 x=154
+obj $_bigbutton_leave name=tempani y=0 z=5
+pause 13
+delete name=record_scrolloff
+delete name=tempani
+obj general/ui/cebutton1 name=ebutton1 x=-106 y=257  z=5
+obj general/ui/cebutton2 name=ebutton2 x=256 y=257  z=5
+scroll name=ebutton1 x=126 speed=10 nowait
+scroll name=ebutton2 x=-126 speed=10 nowait
+obj general/ui/press_scrollon name=press_scrollon y=192 z=6
+obj general/ui/present_scrollon name=present_scrollon y=192 x=164 z=6
+pause 18
+delete name=press_scrollon
+delete name=present_scrollon
+delete name=ebutton1
+delete name=ebutton2
+obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+obj general/cross_exam_buttons name=fbutton_ce y=257 x=16 z=6
+endmacro
+
+macro remove_crossui
+delete name=penalty suppress
+delete name=fbutton_press
+obj general/DS-PyWrightButtons/key_press_high name=fbutton_press y=192 z=6
+obj bg/main2 z=5 name=tempbg y=192
+obj general/ui/cebutton1 name=ebutton1 x=0 y=257 z=5
+obj general/ui/cebutton2 name=ebutton2 x=150 y=257 z=5
+scroll name=ebutton1 x=-106 speed=10 nowait
+scroll name=ebutton2 x=106 speed=10 nowait
+
+delete name=fbutton_press suppress
+delete name=fbutton_present suppress
+obj general/ui/press_high_scrolloff name=press_scrolloff y=192 z=6
+obj general/ui/present_scrolloff name=present_scrolloff y=192 x=164 z=6
+pause 14
+obj general/ui/record_scrollon y=192 x=154 z=6 name=record_scrollon
+obj $_bigbutton_comeback name=tempani y=192 z=5
+pause 8
+delete name=tempani
+delete name=tempbg
+"{next}"
+delete name=ebutton1
+delete name=ebutton2
+delete name=press_scrolloff
+delete name=present_scrolloff
+_show_fake_cr_button
+delete name=record_scrollon
+endmacro
+
+macro st_strt
+delete name=tempbg
+delete name=fbutton_ce
+endmacro

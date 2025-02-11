@@ -1,0 +1,45 @@
+// INTEGER DIVISION
+// via repeated subtraction
+// Stores results in global variables
+// Will cause lag on very large operands
+macro intdiv
+// don't have to care abt signs
+// since negative numbers arent real
+set _dividend $1
+set _divisor $2
+set _quotient 0
+set _remainder
+
+// 0 divided by anything is 0
+is_ex _dividend == 0?
+goto _intdiv_loop_end
+
+// Special handler for divisor > dividend
+is_ex _divisor > _dividend?
+set _remainder $_dividend
+is_ex _divisor > _dividend?
+goto _intdiv_loop_end
+
+// dividing by 0 would cause an infinite loop
+is_ex _divisor == 0?
+"{spd0}{c900}FATAL: DIVIDE BY ZERO{n}SAVE GAME AND CONTACT DEV!"
+is_ex _divisor == 0?
+goto _intdiv_loop_end
+
+label _intdiv_loop_start
+addvar _quotient 1
+subvar _dividend $_divisor
+is_ex _dividend < _divisor?
+goto _intdiv_loop_end
+goto _intdiv_loop_start
+label _intdiv_loop_end
+set _remainder $_dividend
+endmacro
+
+macro is_even
+set _operand $1
+intdiv $_operand 2
+set $2 true
+is_ex _remainder > 0?
+set $2 false
+endmacro

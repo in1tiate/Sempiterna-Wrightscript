@@ -1,0 +1,87 @@
+### MSGWINDOW.MCRO ###
+### Message window manager ###
+### By in1tiate ###
+
+# Manages the fake message box
+# Most other macros that depend on this one can have
+# dependencies removed by commenting out calls to these
+
+macro nti
+// removes button ease in anim for entering talk menu options
+delete name=button-easein suppress
+set _var_nt $1
+{msgwindow_show}
+delete name=nti_nametag suppress
+obj general/nametag/$1 y=$_nt_y name=nti_nametag z=3
+endmacro
+
+macro nti_clear
+set _var_nt
+{msgwindow_show}
+delete name=nti_nametag suppress
+obj general/nametag/none y=$_nt_y name=nti_nametag z=3
+endmacro
+
+macro msgwindow_show
+setflag msgwindow
+delete name=msgwindow suppress
+obj general/ui/msgwindow name=msgwindow y=128 z=3
+endmacro
+
+macro msgwindow_hide
+delflag msgwindow
+delete name=msgwindow suppress
+delete name=nti_nametag suppress
+endmacro
+
+macro msgwindow_slideup
+{msgwindow_hide}
+obj general/ui/msgwindow-slide-ani name=slide y=128 z=3
+pause 12
+delete name=slide
+{nti_clear}
+endmacro
+
+macro msgwindow_question
+obj bg/black name=darken z=3
+delete name=msgwindow suppress
+obj general/ui/msgwindow name=msgwindow y=128 z=3
+delete name=nti_nametag suppress
+joinvar acc1 general/nametag/ $_var_nt
+obj $acc1 y=$_nt_y name=nti_nametag z=3
+fade name=darken out speed=100
+set prompt_type $2
+isempty prompt_type?
+set prompt_type selectanswer
+flag godotwright?
+set _textbox_skipupdate true
+flag godotwright?
+"{c g}{spd0}{sound none}{$_last_written_text}"
+flag godotwright?
+goto skipqimage
+set _question_image general/question/$1
+obj $_question_image name=qimage y=128 z=3
+label skipqimage
+obj bg/borders y=192 z=5 name=qborders
+joinvar prompt_type general/ui/ $prompt_type
+obj $prompt_type name=selectanswer y=186 z=3
+fade name=darken start=0 end=50 speed=2 nowait
+noflag godotwright?
+scroll name=qimage y=-24 speed=2 nowait
+flag godotwright?
+scroll name=_textbox_ y=-24 speed=2 nowait
+scroll name=msgwindow y=-24 speed=2 nowait
+scroll name=selectanswer y=-18 speed=2 nowait
+scroll name=nti_nametag y=-24 speed=2
+delete name=qborders
+endmacro
+
+macro msgwindow_qreset
+flag godotwright?
+set _textbox_skipupdate false
+delete name=darken
+delete name=qimage suppress
+delete name=selectanswer
+delete name=msgwindow
+delete name=nti_nametag
+endmacro

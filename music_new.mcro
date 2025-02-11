@@ -1,0 +1,210 @@
+### MUSIC_NEW by armystuntman circa 2022
+
+#music objection loop=objectionloop fade=out
+#fade=out fades out previous song and fades in new song.
+#fade=in fades in new song only.
+
+#Workaround case-specific music system since _music isn't real.
+#Also prevents re-playing music if the song is already playing.
+#Can use this system to create dynamic music for different screen by saving the current song.
+
+#Variables used:
+_current_music			#The current music track playing. Can be manually set.
+_new_current_music		#Internal variable to compare requested music. DO NOT USE.
+_new_current_music_loop_internal	#Internal variable to handle the music loop. DO NOT USE.
+_fade_current_music_internal	#Internal variable to check if music should fade. DO NOT USE.
+
+
+macro music
+#Request music and it's loop from loop=
+set _new_current_music $1
+set _new_current_music_loop_internal $loop
+#Skips everything if requested track is already playing.
+is _new_current_music $_current_music endmacro
+
+#Fade out previous track first? Fade must be set to anything to work.
+set _fade_current_music_internal $fade
+isempty _fade_current_music_internal skip_fade
+set _music_fade 100
+pause 1 script
+set _music_fade 90
+pause 1 script
+set _music_fade 80
+pause 1 script
+set _music_fade 70
+pause 1 script
+set _music_fade 60
+pause 1 script
+set _music_fade 50
+pause 1 script
+set _music_fade 40
+pause 1 script
+set _music_fade 30
+pause 1 script
+set _music_fade 20
+pause 1 script
+set _music_fade 10
+pause 1 script
+set _music_fade 0
+label skip_fade
+
+#Stops any currently playing music.
+mus
+
+#Makes sure to set music volume to 100 every time in case you forgot...
+set _music_fade 100
+#...But if we're fading in, we need music to be quiet till it does.
+is _fade_current_music_internal fadein?
+set _music_fade 0
+
+#Fix the "_current_music" variable.
+joinvar _current_music $_new_current_music
+
+is _current_music none none
+isempty _current_music none
+mus $_current_music
+
+#Handles looping right after the track, for use with music tracks with more than one possible loop track.
+label loop
+isnotempty _new_current_music_loop_internal?
+set _music_loop $_new_current_music_loop_internal
+
+
+label end
+#Fade in current track? Fade must be set to "in".
+isnot _fade_current_music_internal in skip_fade
+set _music_fade 0
+pause 1 script
+set _music_fade 10
+pause 1 script
+set _music_fade 20
+pause 1 script
+set _music_fade 30
+pause 1 script
+set _music_fade 40
+pause 1 script
+set _music_fade 50
+pause 1 script
+set _music_fade 60
+pause 1 script
+set _music_fade 70
+pause 1 script
+set _music_fade 80
+pause 1 script
+set _music_fade 90
+pause 1 script
+set _music_fade 100
+label skip_fade
+goto endmacro
+
+#Error handler in case music does not exist. Simply plays nothing.
+label none
+set _current_music
+mus
+set _music_fade 100
+label endmacro
+endmacro
+
+###Faster Music Fades###
+
+macro stopmusic
+music none
+endmacro
+
+macro music_fade_out_fast
+set _music_fade 100
+pause 4 script
+set _music_fade 90
+pause 4 script
+set _music_fade 80
+pause 4 script
+set _music_fade 70
+pause 4 script
+set _music_fade 60
+pause 4 script
+set _music_fade 50
+pause 2 script
+set _music_fade 40
+pause 2 script
+set _music_fade 30
+pause 2 script
+set _music_fade 20
+pause 2 script
+set _music_fade 10
+pause 2 script
+set _music_fade 0
+endmacro
+
+macro music_fade_in_fast
+set _music_fade 0
+pause 5 script
+set _music_fade 10
+pause 5 script
+set _music_fade 20
+pause 5 script
+set _music_fade 30
+pause 5 script
+set _music_fade 40
+pause 5 script
+set _music_fade 50
+pause 5 script
+set _music_fade 60
+pause 2 script
+set _music_fade 70
+pause 2 script
+set _music_fade 80
+pause 2 script
+set _music_fade 90
+pause 2 script
+set _music_fade 100
+endmacro
+
+macro music_reset_slow
+set _music_fade 100
+pause 6 script
+set _music_fade 90
+pause 6 script
+set _music_fade 80
+pause 6 script
+set _music_fade 70
+pause 6 script
+set _music_fade 60
+pause 5 script
+set _music_fade 50
+pause 5 script
+set _music_fade 40
+pause 4 script
+set _music_fade 30
+pause 4 script
+set _music_fade 20
+pause 3 script
+set _music_fade 10
+pause 3 script
+set _music_fade 0
+stopmusic
+endmacro
+
+macro music_reset
+set _music_fade 100
+pause 2 script
+set _music_fade 90
+pause 2 script
+set _music_fade 80
+pause 2 script
+set _music_fade 70
+pause 2 script
+set _music_fade 60
+pause 2 script
+set _music_fade 50
+pause 1 script
+set _music_fade 40
+pause 1 script
+set _music_fade 30
+pause 1 script
+set _music_fade 20
+pause 1 script
+set _music_fade 10
+pause 1 script
+set _music_fade 0
+stopmusic
+endmacro

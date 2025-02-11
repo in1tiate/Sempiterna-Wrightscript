@@ -1,0 +1,59 @@
+# SAVESCREEN.MCRO
+# it's the save screen
+# probably needs a rework...
+
+macro savescreen
+msgwindow_hide
+set _allow_saveload false
+pause 20
+bg tbc stack fade
+pause 60
+obj bg/bigblack z=9 name=dramafadeobj fade
+mus
+pause 20
+set _bigbutton_bg bg/main
+bg mainbig
+fade name=dramafadeobj start=100 end=0 speed=3
+sfx jingle
+delete name=dramafadeobj
+setvar savetype fg/saveprompt
+is_ex fun > 990?
+setvar savetype fg/saveher
+obj $savetype x=256 z=8 name=prompt
+scroll name=prompt x=-256 speed=15
+pause 60
+set _list_bg_image bg/mainbig2
+disable_court_record_button
+forgetlist SAVE
+label SAVE
+list noback
+li Yes result=SAVEyes
+li No result=SAVEno
+showlist
+goto SAVE
+
+label SAVEyes
+pause 20
+sfx saveblip
+pause 60
+set _allow_saveload true
+savegame Chapter_Save hide
+goto cleanup
+
+label SAVEno
+joinvar temp1 stat_ $__case_number
+joinvar temp2 $temp1 _daredevil
+addvar $temp2 1
+pause 60
+goto cleanup
+
+label cleanup
+forgetlist save
+set _list_bg_image bg/main
+obj bg/bigblack z=9 name=dramafadeobj fade
+bg black
+pause 20
+delete name=prompt
+delete name=dramafadeobj
+script $1 noclear
+endmacro

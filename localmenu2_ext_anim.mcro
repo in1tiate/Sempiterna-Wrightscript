@@ -1,0 +1,807 @@
+### LOCALMENU2_EXT_ANIM.MCRO ###
+### Animation code for extensions to Localmenu2 ###
+### By in1tiate ###
+
+macro ANIM_LOCALMENU_STARTUP
+delete name=tempbg suppress
+set __startupani general/localmenu/startup
+flag nobody?
+set __startupani general/localmenu/startup2
+obj $__startupani y=192 z=6 name=startupani
+pause 12
+endmacro
+
+macro ANIM_LOCALMENU_EXAMINE_STARTUP
+set __swingout general/localmenu/examine_swingout
+flag nobody?
+set __swingout general/localmenu/examine2_swingout
+delete name=examinebutton suppress
+obj general/localmenu/examine_pressed name=examinebutton x=8 y=245 z=5
+pause 4
+delete name=examinebutton
+obj general/localmenu/examine_high name=examinebutton x=8 y=245 z=5
+pause 10
+scroll name=examinebutton x=64 y=28 speed=6 nowait
+delete name=sel_left
+delete name=sel_right
+obj $__swingout name=swingout y=232 z=4
+delete name=movebutton suppress
+delete name=presentbutton suppress
+delete name=talkbutton suppress
+pause 24
+delete name=swingout
+delete name=examinebutton
+obj general/localmenu/examine_out name=examineout x=70 y=274 z=6
+pause 12
+delete name=examineout
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_STARTUP
+set __swingout general/localmenu/move_swingout
+flag nobody?
+set __swingout general/localmenu/move2_swingout
+delete name=movebutton suppress
+obj general/localmenu/move_pressed name=movebutton x=136 y=245 z=5
+pause 4
+delete name=movebutton
+obj general/localmenu/move_high name=movebutton x=136 y=245 z=5
+pause 10
+scroll name=movebutton x=-64 y=28 speed=6 nowait
+delete name=sel_left
+delete name=sel_right
+obj $__swingout name=swingout y=232 z=4
+delete name=examinebutton suppress
+delete name=presentbutton suppress
+delete name=talkbutton suppress
+pause 20
+delete name=swingout
+delete name=movebutton
+obj general/localmenu/move_out name=moveout x=70 y=274 z=6
+pause 12
+delete name=moveout
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_SETUP_1
+fade name=tempbg out speed=10 nowait
+obj $mo1_thumbpath-in name=mo1_tmb_ani y=192 z=5
+pause 10
+obj $mo1_btnpath-in name=mo1_btn_ani x=109 y=$mo1_y z=5
+pause 2
+obj $mo1_thumbpath name=thumb y=192 z=5
+delete name=mo1_tmb_ani
+pause 6
+gui Button {mo1select} x=109 y=$mo1_y z=5 name=mo1_btn graphic=$mo1_btnpath
+delete name=mo1_btn_ani
+delete name=tempbg
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_SETUP_2
+fade name=tempbg out speed=10 nowait
+obj $mo1_thumbpath-in name=mo1_tmb_ani y=192 z=4
+pause 10
+obj $mo1_btnpath-in name=mo1_btn_ani x=109 y=$mo1_y z=5
+pause 2
+obj $mo1_thumbpath name=thumb y=192 z=4
+delete name=mo1_tmb_ani
+obj $mo2_btnpath-in name=mo2_btn_ani x=109 y=$mo2_y z=5
+pause 6
+gui Button {mo1select} x=109 y=$mo1_y z=5 name=mo1_btn graphic=$mo1_btnpath
+delete name=mo1_btn_ani
+pause 2
+gui Button {mo2select} x=109 y=$mo2_y z=5 name=mo2_btn graphic=$mo2_btnpath
+delete name=mo2_btn_ani
+delete name=tempbg
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_SETUP_3
+fade name=tempbg out speed=10 nowait
+obj $mo1_thumbpath-in name=mo1_tmb_ani y=192 z=4
+pause 10
+obj $mo1_btnpath-in name=mo1_btn_ani x=109 y=$mo1_y z=5
+pause 2
+obj $mo1_thumbpath name=thumb y=192 z=4
+delete name=mo1_tmb_ani
+obj $mo2_btnpath-in name=mo2_btn_ani x=109 y=$mo2_y z=5
+pause 2
+obj $mo3_btnpath-in name=mo3_btn_ani x=109 y=$mo3_y z=5
+pause 4
+gui Button {mo1select} x=109 y=$mo1_y z=5 name=mo1_btn graphic=$mo1_btnpath
+delete name=mo1_btn_ani
+pause 2
+gui Button {mo2select} x=109 y=$mo2_y z=5 name=mo2_btn graphic=$mo2_btnpath
+delete name=mo2_btn_ani
+pause 2
+gui Button {mo3select} x=109 y=$mo3_y z=5 name=mo3_btn graphic=$mo3_btnpath
+delete name=mo3_btn_ani
+delete name=tempbg
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_SETUP_4
+fade name=tempbg out speed=10 nowait
+obj $mo1_thumbpath-in name=mo1_tmb_ani y=192 z=4
+pause 10
+obj $mo1_btnpath-in name=mo1_btn_ani x=109 y=$mo1_y z=5
+pause 2
+obj $mo1_thumbpath name=thumb y=192 z=4
+delete name=mo1_tmb_ani
+obj $mo2_btnpath-in name=mo2_btn_ani x=109 y=$mo2_y z=5
+pause 2
+obj $mo3_btnpath-in name=mo3_btn_ani x=109 y=$mo3_y z=5
+pause 2
+obj $mo4_btnpath-in name=mo4_btn_ani x=109 y=$mo4_y z=5
+pause 2
+gui Button {mo1select} x=109 y=$mo1_y z=5 name=mo1_btn graphic=$mo1_btnpath
+delete name=mo1_btn_ani
+pause 2
+gui Button {mo2select} x=109 y=$mo2_y z=5 name=mo2_btn graphic=$mo2_btnpath
+delete name=mo2_btn_ani
+pause 2
+gui Button {mo3select} x=109 y=$mo3_y z=5 name=mo3_btn graphic=$mo3_btnpath
+delete name=mo3_btn_ani
+pause 2
+gui Button {mo4select} x=109 y=$mo4_y z=5 name=mo4_btn graphic=$mo4_btnpath
+delete name=mo4_btn_ani
+delete name=tempbg
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_BACK
+is_ex _move_opts > 3?
+delete name=mo4_btn suppress
+is_ex _move_opts > 3?
+obj $mo1_btnpath-out name=mo4_ani x=109 y=$mo4_y z=6
+pause 2
+is_ex _move_opts > 2?
+delete name=mo3_btn suppress
+is_ex _move_opts > 2?
+obj $mo3_btnpath-out name=mo3_ani x=109 y=$mo3_y z=6
+pause 2
+is_ex _move_opts > 1?
+delete name=mo2_btn suppress
+is_ex _move_opts > 1?
+obj $mo2_btnpath-out name=mo2_ani x=109 y=$mo2_y z=6
+pause 2
+is_ex _move_opts > 0?
+delete name=mo1_btn suppress
+is_ex _move_opts > 0?
+obj $mo1_btnpath-out name=mo1_ani x=109 y=$mo1_y z=6
+delete name=mo4_ani suppress
+pause 2
+delete name=mo3_ani suppress
+pause 2
+delete name=mo2_ani suppress
+pause 2
+delete name=mo1_ani suppress
+
+obj bg/blackborderline name=borderline_temp y=192 z=6 
+fade name=borderline_temp in speed=10 nowait
+delete name=thumb
+obj $_mo_selected name=tmb_ani y=192 z=5
+pause 12
+delete name=tmb_ani
+delete name=movebg
+fade name=borderline_temp out speed=10
+delete name=borderline_temp
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_MO1_CONFIRM
+joinvar dat1 $mo1_btnpath _high
+sfx Confirm
+delete name=mo1_btn
+obj $dat1 name=flashybutton x=109 y=$mo1_y z=4
+set dat1
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+is_ex _move_opts > 3?
+ANIM_LOCALMENU_MOVE_MO4_OUT
+fade name=flashybutton in speed=100
+pause 3
+is_ex _move_opts > 2?
+ANIM_LOCALMENU_MOVE_MO3_OUT
+fade name=flashybutton out speed=100
+pause 3
+is_ex _move_opts > 1?
+ANIM_LOCALMENU_MOVE_MO2_OUT
+delete name=mo4_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=mo3_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+delete name=mo2_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+delete name=flashybutton
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_MO2_CONFIRM
+joinvar dat1 $mo2_btnpath _high
+sfx Confirm
+delete name=mo2_btn
+obj $dat1 name=flashybutton x=109 y=$mo2_y z=4
+set dat1
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+is_ex _move_opts > 3?
+ANIM_LOCALMENU_MOVE_MO4_OUT
+fade name=flashybutton in speed=100
+pause 3
+is_ex _move_opts > 2?
+ANIM_LOCALMENU_MOVE_MO3_OUT
+fade name=flashybutton out speed=100
+pause 3
+ANIM_LOCALMENU_MOVE_MO1_OUT
+delete name=mo4_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=mo3_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+delete name=mo1_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+delete name=flashybutton
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_MO3_CONFIRM
+joinvar dat1 $mo3_btnpath _high
+sfx Confirm
+delete name=mo3_btn
+obj $dat1 name=flashybutton x=109 y=$mo3_y z=4
+set dat1
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+is_ex _move_opts > 3?
+ANIM_LOCALMENU_MOVE_MO4_OUT
+fade name=flashybutton in speed=100
+pause 3
+ANIM_LOCALMENU_MOVE_MO2_OUT
+delete name=mo4_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+
+ANIM_LOCALMENU_MOVE_MO1_OUT
+delete name=mo2_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=mo1_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+delete name=flashybutton
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_MO4_CONFIRM
+joinvar dat1 $mo4_btnpath _high
+sfx Confirm
+delete name=mo4_btn
+obj $dat1 name=flashybutton x=109 y=$mo4_y z=4
+set dat1
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+ANIM_LOCALMENU_MOVE_MO3_OUT
+fade name=flashybutton in speed=100
+pause 3
+ANIM_LOCALMENU_MOVE_MO2_OUT
+delete name=mo3_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+ANIM_LOCALMENU_MOVE_MO1_OUT
+delete name=mo2_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=mo1_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+delete name=flashybutton
+endmacro
+
+macro ANIM_LOCALMENU_MOVE_MO1_OUT
+delete name=mo1_btn suppress
+obj $mo1_btnpath-out name=mo1_ani x=109 y=$mo1_y z=6
+endmacro
+macro ANIM_LOCALMENU_MOVE_MO2_OUT
+delete name=mo2_btn suppress
+obj $mo2_btnpath-out name=mo2_ani x=109 y=$mo2_y z=6
+endmacro
+macro ANIM_LOCALMENU_MOVE_MO3_OUT
+delete name=mo3_btn suppress
+obj $mo3_btnpath-out name=mo3_ani x=109 y=$mo3_y z=6
+endmacro
+macro ANIM_LOCALMENU_MOVE_MO4_OUT
+delete name=mo4_btn suppress
+obj $mo4_btnpath-out name=mo4_ani x=109 y=$mo4_y z=6
+endmacro
+
+
+macro ANIM_LOCALMENU_TALK_STARTUP
+delete name=talkbutton suppress
+obj general/localmenu/talk_pressed name=talkbutton x=8 y=301 z=5
+pause 4
+delete name=talkbutton
+obj general/localmenu/talk_high name=talkbutton x=8 y=301 z=5
+pause 10
+scroll name=talkbutton x=64 y=-28 speed=6 nowait
+delete name=sel_left
+delete name=sel_right
+obj general/localmenu/talk_swingout name=swingout y=232 z=4
+delete name=examinebutton suppress
+delete name=presentbutton suppress
+delete name=movebutton suppress
+pause 24
+delete name=swingout
+delete name=talkbutton
+obj general/localmenu/talk_out name=talkout x=70 y=274 z=6
+pause 12
+delete name=talkout
+endmacro
+
+macro ANIM_LOCALMENU_PRESENT_STARTUP
+delete name=presentbutton suppress
+obj general/localmenu/present_pressed name=presentbutton x=136 y=301 z=5
+pause 4
+delete name=presentbutton
+obj general/localmenu/present_high name=presentbutton x=136 y=301 z=5
+pause 10
+scroll name=presentbutton x=-64 y=-28 speed=6 nowait
+delete name=sel_left
+delete name=sel_right
+obj general/localmenu/present_swingout name=swingout y=232 z=4
+delete name=examinebutton suppress
+delete name=talkbutton suppress
+delete name=movebutton suppress
+pause 20
+delete name=swingout
+delete name=presentbutton
+obj general/localmenu/present_out name=presentout x=70 y=274 z=6
+pause 12
+delete name=presentout
+endmacro
+
+
+### TALK MENU
+
+macro ANIM_LOCALMENU_TALK_BEGIN
+obj $_bigbutton_comeback name=button-easein y=192 z=4
+pause 9
+delete name=button-easein
+endmacro
+
+macro ANIM_LOCALMENU_TALK_END
+set _talk_target
+setvar temp_bigbg $_bigbutton_bg
+obj $temp_bigbg y=192 z=1 name=fakebg
+obj $_bigbutton_leave name=tempani y=0 z=5
+pause 15
+delete name=tempani
+obj $temp_bigbg z=6 y=192 name=delaymasker
+endmacro
+
+macro ANIM_LOCALMENU_TALK_MARKS
+setvar acc4 $to1_y
+subvar acc4 9
+is _to1_mark check?
+obj general/checkmark name=to1_mark x=1 y=$acc4 z=6
+is _to1_mark lock?
+obj general/checkmark_lock name=to1_mark x=0 y=$acc4 z=6
+is _to1_mark eye?
+obj general/checkmark_eye name=to1_mark x=0 y=$acc4 z=6
+is_ex _talk_opts > 1?
+goto _do_mark_2
+goto _finish_marks
+
+label _do_mark_2
+setvar acc4 $to2_y
+subvar acc4 9
+is _to2_mark check?
+obj general/checkmark name=to2_mark x=1 y=$acc4 z=6
+is _to2_mark lock?
+obj general/checkmark_lock name=to2_mark x=0 y=$acc4 z=6
+is_ex _talk_opts > 2?
+goto _do_mark_3
+goto _finish_marks
+
+label _do_mark_3
+setvar acc4 $to3_y
+subvar acc4 9
+is _to3_mark check?
+obj general/checkmark name=to3_mark x=1 y=$acc4 z=6
+is _to3_mark lock?
+obj general/checkmark_lock name=to3_mark x=0 y=$acc4 z=6
+is_ex _talk_opts > 3?
+goto _do_mark_4
+goto _finish_marks
+
+label _do_mark_4
+setvar acc4 $to4_y
+subvar acc4 9
+is _to4_mark check?
+obj general/checkmark name=to4_mark x=1 y=$acc4 z=6
+is _to4_mark lock?
+obj general/checkmark_lock name=to4_mark x=0 y=$acc4 z=6
+
+label _finish_marks
+set acc4
+endmacro
+
+macro ANIM_LOCALMENU_TALK_CLEAR_MARKS
+delete name=to1_mark suppress
+delete name=to2_mark suppress
+delete name=to3_mark suppress
+delete name=to4_mark suppress
+endmacro
+
+macro ANIM_LOCALMENU_TALK_SETUP_1
+delete name=fakebg suppress
+fade name=tempbg out speed=10 nowait
+pause 10
+setvar acc3 $to1_y
+subvar acc3 3
+obj $to1_btnpath-in name=to1_btn_ani x=6 y=$acc3 z=5
+pause 8
+gui Button {to1select} x=10 y=$to1_y z=5 name=to1_btn graphic=$to1_btnpath
+delete name=to1_btn_ani
+delete name=tempbg
+set acc3
+endmacro
+
+macro ANIM_LOCALMENU_TALK_SETUP_2
+delete name=fakebg suppress
+fade name=tempbg out speed=10 nowait
+pause 10
+setvar acc3 $to1_y
+subvar acc3 3
+obj $to1_btnpath-in name=to1_btn_ani x=6 y=$acc3 z=5
+pause 2
+setvar acc3 $to2_y
+subvar acc3 3
+obj $to2_btnpath-in name=to2_btn_ani x=6 y=$acc3 z=5
+pause 6
+gui Button {to1select} x=10 y=$to1_y z=5 name=to1_btn graphic=$to1_btnpath
+delete name=to1_btn_ani
+pause 2
+gui Button {to2select} x=10 y=$to2_y z=5 name=to2_btn graphic=$to2_btnpath
+delete name=to2_btn_ani
+delete name=tempbg
+set acc3
+endmacro
+
+macro ANIM_LOCALMENU_TALK_SETUP_3
+delete name=fakebg suppress
+fade name=tempbg out speed=10 nowait
+pause 10
+setvar acc3 $to1_y
+subvar acc3 3
+obj $to1_btnpath-in name=to1_btn_ani x=6 y=$acc3 z=5
+pause 2
+setvar acc3 $to2_y
+subvar acc3 3
+obj $to2_btnpath-in name=to2_btn_ani x=6 y=$acc3 z=5
+pause 2
+setvar acc3 $to3_y
+subvar acc3 3
+obj $to3_btnpath-in name=to3_btn_ani x=6 y=$acc3 z=5
+pause 4
+gui Button {to1select} x=10 y=$to1_y z=5 name=to1_btn graphic=$to1_btnpath
+delete name=to1_btn_ani
+pause 2
+gui Button {to2select} x=10 y=$to2_y z=5 name=to2_btn graphic=$to2_btnpath
+delete name=to2_btn_ani
+pause 2
+gui Button {to3select} x=10 y=$to3_y z=5 name=to3_btn graphic=$to3_btnpath
+delete name=to3_btn_ani
+delete name=tempbg
+set acc3
+endmacro
+
+macro ANIM_LOCALMENU_TALK_SETUP_4
+delete name=fakebg suppress
+fade name=tempbg out speed=10 nowait
+pause 10
+setvar acc3 $to1_y
+subvar acc3 3
+obj $to1_btnpath-in name=to1_btn_ani x=6 y=$acc3 z=5
+pause 2
+setvar acc3 $to2_y
+subvar acc3 3
+obj $to2_btnpath-in name=to2_btn_ani x=6 y=$acc3 z=5
+pause 2
+setvar acc3 $to3_y
+subvar acc3 3
+obj $to3_btnpath-in name=to3_btn_ani x=6 y=$acc3 z=5
+pause 2
+setvar acc3 $to4_y
+subvar acc3 3
+obj $to4_btnpath-in name=to4_btn_ani x=6 y=$acc3 z=5
+pause 2
+gui Button {to1select} x=10 y=$to1_y z=5 name=to1_btn graphic=$to1_btnpath
+delete name=to1_btn_ani
+pause 2
+gui Button {to2select} x=10 y=$to2_y z=5 name=to2_btn graphic=$to2_btnpath
+delete name=to2_btn_ani
+pause 2
+gui Button {to3select} x=10 y=$to3_y z=5 name=to3_btn graphic=$to3_btnpath
+delete name=to3_btn_ani
+pause 2
+gui Button {to4select} x=10 y=$to4_y z=5 name=to4_btn graphic=$to4_btnpath
+delete name=to4_btn_ani
+delete name=tempbg
+set acc3
+endmacro
+
+macro ANIM_LOCALMENU_TALK_BACK
+{ANIM_LOCALMENU_TALK_CLEAR_MARKS}
+is_ex _talk_opts > 3?
+delete name=to4_btn suppress
+is_ex _talk_opts > 3?
+obj $to1_btnpath-out name=to4_ani x=10 y=$to4_y z=6
+pause 2
+is_ex _talk_opts > 2?
+delete name=to3_btn suppress
+is_ex _talk_opts > 2?
+obj $to3_btnpath-out name=to3_ani x=10 y=$to3_y z=6
+pause 2
+is_ex _talk_opts > 1?
+delete name=to2_btn suppress
+is_ex _talk_opts > 1?
+obj $to2_btnpath-out name=to2_ani x=10 y=$to2_y z=6
+pause 2
+is_ex _talk_opts > 0?
+delete name=to1_btn suppress
+is_ex _talk_opts > 0?
+obj $to1_btnpath-out name=to1_ani x=10 y=$to1_y z=6
+delete name=to4_ani suppress
+pause 2
+delete name=to3_ani suppress
+pause 2
+delete name=to2_ani suppress
+pause 2
+delete name=to1_ani suppress
+
+obj bg/blackborderline name=borderline_temp y=192 z=6 
+fade name=borderline_temp in speed=10 nowait
+pause 12
+delete name=talkbg
+obj bg/main2 name=tempbg y=192 z=3
+fade name=borderline_temp out speed=10
+delete name=borderline_temp
+endmacro
+
+macro ANIM_LOCALMENU_TALK_TO1_CONFIRM
+joinvar dat1 $to1_btnpath _high
+sfx Confirm
+{ANIM_LOCALMENU_TALK_CLEAR_MARKS}
+delete name=to1_btn
+obj $dat1 name=flashybutton x=10 y=$to1_y z=0
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+is_ex _talk_opts > 3?
+ANIM_LOCALMENU_TALK_TO4_OUT
+fade name=flashybutton in speed=100
+pause 3
+is_ex _talk_opts > 2?
+ANIM_LOCALMENU_TALK_TO3_OUT
+fade name=flashybutton out speed=100
+pause 3
+is_ex _talk_opts > 1?
+ANIM_LOCALMENU_TALK_TO2_OUT
+delete name=to4_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=to3_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+delete name=to2_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+setvar acc2 $to1_y
+mulvar acc2 -1
+addvar acc2 192
+// subvar acc2 26
+delete name=flashybutton
+obj $dat1 name=flashybutton x=10 y=$to1_y z=4
+set dat1
+delete name=sel_left suppress
+delete name=sel_right suppress
+obj bg/borders name=tempborders y=192 z=4
+scroll name=flashybutton y=$acc2 speed=6
+// Workaround for 0.990.2
+pause 1
+delete name=flashybutton
+delete name=tempborders
+endmacro
+
+macro ANIM_LOCALMENU_TALK_TO2_CONFIRM
+joinvar dat1 $to2_btnpath _high
+sfx Confirm
+{ANIM_LOCALMENU_TALK_CLEAR_MARKS}
+delete name=to2_btn
+obj $dat1 name=flashybutton x=10 y=$to2_y z=4
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+is_ex _talk_opts > 3?
+ANIM_LOCALMENU_TALK_TO4_OUT
+fade name=flashybutton in speed=100
+pause 3
+is_ex _talk_opts > 2?
+ANIM_LOCALMENU_TALK_TO3_OUT
+fade name=flashybutton out speed=100
+pause 3
+ANIM_LOCALMENU_TALK_TO1_OUT
+delete name=to4_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=to3_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+delete name=to1_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+setvar acc2 $to2_y
+mulvar acc2 -1
+addvar acc2 192
+// subvar acc2 26
+delete name=flashybutton
+obj $dat1 name=flashybutton x=10 y=$to2_y z=4
+set dat1
+delete name=sel_left suppress
+delete name=sel_right suppress
+obj bg/borders name=accborders y=192 z=4
+scroll name=flashybutton y=$acc2 speed=7
+pause 1
+delete name=flashybutton
+delete name=accborders
+endmacro
+
+macro ANIM_LOCALMENU_TALK_TO3_CONFIRM
+joinvar dat1 $to3_btnpath _high
+sfx Confirm
+{ANIM_LOCALMENU_TALK_CLEAR_MARKS}
+delete name=to3_btn
+obj $dat1 name=flashybutton x=10 y=$to3_y z=4
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+is_ex _talk_opts > 3?
+ANIM_LOCALMENU_TALK_TO4_OUT
+fade name=flashybutton in speed=100
+pause 3
+ANIM_LOCALMENU_TALK_TO2_OUT
+delete name=to4_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+
+ANIM_LOCALMENU_TALK_TO1_OUT
+delete name=to2_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=to1_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+setvar acc2 $to3_y
+mulvar acc2 -1
+addvar acc2 192
+// subvar acc2 26
+delete name=flashybutton
+obj $dat1 name=flashybutton x=10 y=$to3_y z=4
+set dat1
+delete name=sel_left suppress
+delete name=sel_right suppress
+obj bg/borders name=accborders y=192 z=4
+scroll name=flashybutton y=$acc2 speed=8
+pause 1
+delete name=flashybutton
+delete name=accborders
+endmacro
+
+macro ANIM_LOCALMENU_TALK_TO4_CONFIRM
+joinvar dat1 $to4_btnpath _high
+sfx Confirm
+{ANIM_LOCALMENU_TALK_CLEAR_MARKS}
+delete name=to4_btn
+obj $dat1 name=flashybutton x=10 y=$to4_y z=4
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+ANIM_LOCALMENU_TALK_TO3_OUT
+fade name=flashybutton in speed=100
+pause 3
+ANIM_LOCALMENU_TALK_TO2_OUT
+delete name=to3_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+ANIM_LOCALMENU_TALK_TO1_OUT
+delete name=to2_ani suppress
+fade name=flashybutton in speed=100
+pause 3
+delete name=to1_ani suppress
+fade name=flashybutton out speed=100
+pause 3
+
+fade name=flashybutton in speed=100
+pause 3
+fade name=flashybutton out speed=100
+pause 3
+fade name=flashybutton in speed=100
+pause 10
+setvar acc2 $to4_y
+mulvar acc2 -1
+addvar acc2 192
+// subvar acc2 26
+delete name=flashybutton
+obj $dat1 name=flashybutton x=10 y=$to4_y z=4
+set dat1
+delete name=sel_left suppress
+delete name=sel_right suppress
+obj bg/borders name=accborders y=192 z=4
+scroll name=flashybutton y=$acc2 speed=10
+pause 1
+delete name=flashybutton
+delete name=accborders
+endmacro
+
+macro ANIM_LOCALMENU_TALK_TO1_OUT
+setvar acc3 $to1_y
+subvar acc3 3
+delete name=to1_btn suppress
+obj $to1_btnpath-out name=to1_ani x=6 y=$acc3 z=6
+endmacro
+macro ANIM_LOCALMENU_TALK_TO2_OUT
+setvar acc3 $to2_y
+subvar acc3 3
+delete name=to2_btn suppress
+obj $to2_btnpath-out name=to2_ani x=6 y=$acc3 z=6
+endmacro
+macro ANIM_LOCALMENU_TALK_TO3_OUT
+setvar acc3 $to3_y
+subvar acc3 3
+delete name=to3_btn suppress
+obj $to3_btnpath-out name=to3_ani x=6 y=$acc3 z=6
+endmacro
+macro ANIM_LOCALMENU_TALK_TO4_OUT
+setvar acc3 $to4_y
+subvar acc3 3
+delete name=to4_btn suppress
+obj $to4_btnpath-out name=to4_ani x=6 y=$acc3 z=6
+endmacro

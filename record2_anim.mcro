@@ -1,0 +1,851 @@
+// LOCALMENU EASE OUT
+macro ANIM_RECORD_LOCALOUT
+set __goawayani general/localmenu/goaway
+flag nobody?
+set __goawayani general/localmenu/goaway2
+obj $__goawayani y=192 z=1 name=goaway_ani
+pause 14
+delete name=goaway_ani
+delete name=recordbut_in
+endmacro
+
+macro ANIM_RECORD_GETEVIDENCE
+{ANIM_LOCALMENU_TALK_END}
+delete name=delaymasker suppress
+set force_inventory $1
+set inv_selected $force_inventory
+{disable_court_record_button}
+{gui_flush}
+obj general/ui/record_scrolloff name=record_scrolloff x=154 y=192 z=6
+
+setflag record_noback
+setflag record_getev
+delflag presentmode
+delflag presented
+delflag promptmode
+{ANIM_RECORD_OPEN}
+delete name=record_scrolloff suppress
+
+getvar temp_bigbg _bigbutton_bg
+set _bigbutton_bg none
+set _bigbutton_img none
+set _textbox_show_button false
+obj $temp_bigbg name=recordbg y=192 z=-1
+obj general/ui/record/grid name=grid x=24 y=248 z=2
+{update_max_pages}
+
+obj general/ui/record/button_left name=buttonleft x=0 y=248 z=5
+obj general/ui/record/button_right name=buttonright x=240 y=248 z=5
+obj general/ui/record/nameplate name=nameplate x=25 y=228 z=0
+obj general/ui/record/borders_recordforce_top name=record_border1 x=0 y=192 z=5
+obj general/ui/record/borders_noback_bot name=record_border2 x=0 y=352 z=5
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner x=0 y=202 z=0
+
+{ARRAY_GET_IDX_OF_ITEM $1 $2 real_idx}
+{intdiv $real_idx 8}
+set _ev_selected $_remainder
+addvar _quotient 1
+set current_page $_quotient
+
+// draw evidence icons, name graphic, etc
+{reset_record_buttons}
+obj fg/empty y=192 z=15 name=getev_clickmask
+setflag nosound
+{ANIM_RECORD_FLASH_CURRENT}
+//delflag record_noback
+//delflag record_getev
+endmacro
+
+macro ANIM_RECORD_FLASH_CURRENT
+{ANIM_RECORD_SELECT_CURRENT}
+timer 4 _ANIM_HIDE_SEL
+timer 8 _ANIM_SHOW_SEL
+timer 12 _ANIM_HIDE_SEL
+timer 16 _ANIM_SHOW_SEL
+timer 20 _ANIM_HIDE_SEL
+timer 24 _ANIM_SHOW_SEL
+timer 28 _ANIM_HIDE_SEL
+timer 32 _ANIM_SHOW_SEL
+endmacro
+
+macro _ANIM_HIDE_SEL
+fade name=ev_selector out speed=100
+endmacro
+macro _ANIM_SHOW_SEL
+fade name=ev_selector in speed=100
+endmacro
+
+macro ANIM_RECORD_SELECT_CURRENT
+{populate_currentev}
+{lookup_icn_pos $_ev_selected}
+// frame should be slightly offset up and to the left
+subvar _x 2
+subvar _y 2
+obj general/ui/record/evframe_small x=$_x y=$_y name=ev_selector z=4 
+endmacro
+
+macro ANIM_RECORD_FINISH_GETEV
+// does nothing but send a gui update
+endmacro
+
+// OPEN RECORD
+macro ANIM_RECORD_OPEN
+// sometimes a transition animation will create this
+// so we delete it because we make our own
+delete name=fakebg suppress
+// fake background to animate on top of
+getvar temp_bigbg2 _bigbutton_bg
+joinvar dat4 $temp_bigbg2 lines
+obj $dat4 name=recordbg_in y=192 z=-1
+// upper border logic
+noflag presentmode?
+obj general/ui/record/borders_record_top name=record_border1_in x=0 y=192 z=5
+flag presentmode?
+obj general/ui/record/borders_present_top name=record_border1_in x=0 y=192 z=5
+isnotempty force_inventory?
+delete name=record_border1_in
+isnotempty force_inventory?
+obj general/ui/record/borders_presentforce_top name=record_border1_in x=0 y=192 z=5
+flag record_getev?
+delete name=record_border1_in
+flag record_getev?
+obj general/ui/record/borders_recordforce_top name=record_border1_in x=0 y=192 z=5
+// lower border logic
+noflag record_noback?
+obj general/ui/record/borders_record_bot name=record_border2_in x=0 y=352 z=5
+flag record_noback?
+obj general/ui/record/borders_noback_bot name=record_border2_in x=0 y=352 z=5
+// play the grid swing-in animation
+obj general/ui/record/grid_in x=0 y=192 z=0 name=grid_in
+pause 10
+
+// inventory name banner
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner_in x=0 y=180 z=0
+// inventory switcher button
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1 _scrollon
+isempty force_inventory?
+obj $acc1 name=switch_btn_in x=201 y=192 z=6
+// display present/back according to flags
+flag presentmode?
+obj general/ui/record/present_scrollon name=present_btn_in x=73 y=192 z=6
+noflag record_noback?
+obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=384 z=6
+
+// scroll the ui in
+noflag record_noback?
+scroll name=back_btn_in y=-32 speed=4 nowait
+scroll name=banner_in y=22 speed=4 nowait
+
+obj general/ui/record/nameplate name=nameplate_in x=25 y=192 z=0
+scroll name=nameplate_in y=36 speed=6 nowait
+pause 4
+
+obj general/ui/record/button_left name=buttonleft_in x=-16 y=248
+scroll name=buttonleft_in x=16 speed=4 nowait
+obj general/ui/record/button_right name=buttonright_in x=256 y=248
+scroll name=buttonright_in x=-16 speed=4 nowait
+
+pause 4
+// clean up our mess
+delete name=grid_in
+delete name=record_border1_in
+delete name=record_border2_in
+delete name=buttonleft_in
+delete name=buttonright_in
+delete name=nameplate_in
+delete name=banner_in
+delete name=present_btn_in suppress
+delete name=switch_btn_in suppress
+delete name=back_btn_in suppress
+delete name=recordbg_in
+delete name=record_scrolloff
+endmacro
+
+// CLOSE RECORD
+macro ANIM_RECORD_CLOSE
+// e.g. "talklines"
+joinvar dat4 $temp_bigbg2 lines
+obj $dat4 name=recordbg_in y=192 z=-1
+// display a blank grid while we scroll away the rest of the ui
+obj general/ui/record/grid name=grid x=24 y=248 z=0
+
+// Record upper border logic
+noflag presentmode?
+obj general/ui/record/borders_record_top name=record_border1_in x=0 y=192 z=5
+flag presentmode?
+obj general/ui/record/borders_present_top name=record_border1_in x=0 y=192 z=5
+isnotempty force_inventory?
+delete name=record_border1_in
+isnotempty force_inventory?
+obj general/ui/record/borders_presentforce_top name=record_border1_in x=0 y=192 z=5
+// Lower border logic
+noflag record_noback?
+obj general/ui/record/borders_record_bot name=record_border2_in x=0 y=352 z=5
+flag record_noback?
+obj general/ui/record/borders_noback_bot name=record_border2_in x=0 y=352 z=5
+
+// inventory name banner
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner_in x=0 y=202 z=0
+// switch inventory button
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1 _scrolloff
+isempty force_inventory?
+obj $acc1 name=switch_btn_in x=201 y=192 z=6
+
+// logic for figuring out which button should get highlighted
+flag presented?
+obj general/ui/record/present_high_scrolloff name=present_btn_in x=73 y=192 z=6
+flag presented?
+goto skipbrown
+flag presentmode?
+obj general/ui/record/present_scrolloff name=present_btn_in x=73 y=192 z=6
+label skipbrown
+flag presented back_present fail=back_nopresent
+
+label back_present
+noflag record_noback?
+obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=352 z=6
+goto end_anim_record_close
+
+label back_nopresent
+noflag record_noback?
+obj general/DS-PyWrightButtons/key_borderless_back_high name=back_btn_in x=0 y=352 z=6
+goto end_anim_record_close
+
+// Logic converges here
+label end_anim_record_close
+
+// make fake versions of these before flushing the "real" ones
+obj general/ui/record/nameplate name=nameplate_in x=25 y=228 z=0
+obj general/ui/record/button_left name=buttonleft_in x=0 y=248
+obj general/ui/record/button_right name=buttonright_in x=240 y=248
+{flush_record}
+// scroll the ui out
+noflag record_noback?
+scroll name=back_btn_in y=32 speed=4 nowait
+
+scroll name=banner_in y=-22 speed=4 nowait
+scroll name=nameplate_in y=-46 speed=6 nowait
+pause 4
+scroll name=buttonleft_in x=-16 speed=4 nowait
+scroll name=buttonright_in x=16 speed=4 nowait
+pause 4
+// play the grid swing-out animation
+delete name=grid
+obj general/ui/record/grid_out x=0 y=192 z=0 name=grid_in
+pause 10
+delete name=grid_in
+pause 8
+// clean up our mess
+delete name=record_border1_in
+delete name=record_border2_in
+delete name=buttonleft_in
+delete name=buttonright_in
+delete name=nameplate_in
+delete name=banner_in
+delete name=present_btn_in suppress
+delete name=switch_btn_in suppress
+delete name=back_btn_in suppress
+delete name=recordbg_in
+delete name=record_scrolloff
+endmacro
+
+// SWITCH INVENTORY
+macro ANIM_RECORD_SWITCH
+joinvar dat4 $temp_bigbg2 lines
+obj $dat4 name=recordbg_in y=192 z=-1
+{get_next_inventory dat1 $inv_selected}
+joinvar switch1 general/ui/record/ $dat1 _high_scrolloff
+joinvar banner1_path general/ui/record/banner_ $inv_selected
+joinvar banner2_path general/ui/record/banner_ $dat1
+{get_next_inventory dat1 $dat1}
+joinvar switch2 general/ui/record/ $dat1 _scrollon
+delete name=switch_btn suppress
+obj $switch1 name=switch_btn_in x=201 y=192 z=6
+delete name=banner suppress
+obj $banner1_path name=banner_in x=0 y=202 z=0
+delete name=ev_nameplate
+delete name=ev_selector
+delete name=evbutton1 suppress
+delete name=evbutton2 suppress
+delete name=evbutton3 suppress
+delete name=evbutton4 suppress
+delete name=evbutton5 suppress
+delete name=evbutton6 suppress
+delete name=evbutton7 suppress
+delete name=evbutton8 suppress
+delete name=grid
+delete name=buttonleft
+delete name=buttonright
+delete name=record_arrowleft_btn suppress
+delete name=record_arrowleft_gfx suppress
+delete name=record_arrowright_btn suppress
+delete name=record_arrowright_gfx suppress
+obj general/ui/record/button_left name=buttonleft x=0 y=248 z=5
+obj general/ui/record/button_right name=buttonright x=240 y=248 z=5
+scroll name=banner_in y=-22 speed=4 nowait
+obj general/ui/record/grid_out x=0 y=192 z=0 name=grid_in
+pause 10
+delete name=banner_in
+delete name=switch_btn_in
+obj $switch2 name=switch_btn_in x=201 y=192 z=6
+delete name=grid_in
+obj general/ui/record/grid_in x=0 y=192 z=0 name=grid_in
+obj $banner2_path name=banner_in x=0 y=180 z=0
+pause 4
+scroll name=banner_in y=22 speed=4 nowait
+pause 5
+delete name=recordbg_in suppress
+endmacro
+
+// PAGE TURN SETUP
+// call BEFORE changing page number
+macro ANIM_RECORD_PAGETURN_SETUP
+delete name=evbutton1 suppress
+delete name=evbutton2 suppress
+delete name=evbutton3 suppress
+delete name=evbutton4 suppress
+delete name=evbutton5 suppress
+delete name=evbutton6 suppress
+delete name=evbutton7 suppress
+delete name=evbutton8 suppress
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+{ARRAY_GET_USED $inv_selected acc1}
+is_ex acc1 <= 8?
+goto fevi_layout_loop
+
+{get_count_from_page acc1}
+
+label fevi_layout_loop
+isempty _ITER?
+goto fevi_layout_begin
+{_ANIM_RECORD_CREATE_FAKE_EVI_BUTTON}
+
+label fevi_layout_begin
+{ITERATE 1 $acc1 fevi_layout_loop}
+endmacro
+
+// PAGE TURN EXECUTE
+// call AFTER changing page number
+macro ANIM_RECORD_PAGETURN
+setvar page_modifier -256
+flag recordpageleft?
+setvar page_modifier 256
+flag recordpageleft?
+obj general/ui/record/grid name=grid_page x=-232 y=248 z=0
+noflag recordpageleft?
+obj general/ui/record/grid name=grid_page x=280 y=248 z=0
+{ARRAY_GET_USED $inv_selected new1}
+is_ex new1 <= 8?
+goto fevi2_layout_loop
+
+{get_count_from_page new1}
+
+label fevi2_layout_loop
+isempty _ITER?
+goto fevi2_layout_begin
+{_ANIM_RECORD_CREATE_FAKE_EVI_BUTTON_PAGE}
+
+label fevi2_layout_begin
+{ITERATE 1 $new1 fevi2_layout_loop}
+
+//"last page count: {$acc1}"
+//"current page count: {$new1}"
+scroll name=grid x=$page_modifier speed=10 nowait
+scroll name=grid_page x=$page_modifier speed=10 nowait
+scroll name=evbutton1 x=$page_modifier speed=10 nowait
+is_ex acc1 > 1?
+scroll name=evbutton2 x=$page_modifier speed=10 nowait
+is_ex acc1 > 2?
+scroll name=evbutton3 x=$page_modifier speed=10 nowait
+is_ex acc1 > 3?
+scroll name=evbutton4 x=$page_modifier speed=10 nowait
+is_ex acc1 > 4?
+scroll name=evbutton5 x=$page_modifier speed=10 nowait
+is_ex acc1 > 5?
+scroll name=evbutton6 x=$page_modifier speed=10 nowait
+is_ex acc1 > 6?
+scroll name=evbutton7 x=$page_modifier speed=10 nowait
+is_ex acc1 > 7?
+scroll name=evbutton8 x=$page_modifier speed=10 nowait
+is_ex new1 > 1?
+scroll name=f_evbutton2 x=$page_modifier speed=10 nowait
+is_ex new1 > 2?
+scroll name=f_evbutton3 x=$page_modifier speed=10 nowait
+is_ex new1 > 3?
+scroll name=f_evbutton4 x=$page_modifier speed=10 nowait
+is_ex new1 > 4?
+scroll name=f_evbutton5 x=$page_modifier speed=10 nowait
+is_ex new1 > 5?
+scroll name=f_evbutton6 x=$page_modifier speed=10 nowait
+is_ex new1 > 6?
+scroll name=f_evbutton7 x=$page_modifier speed=10 nowait
+is_ex new1 > 7?
+scroll name=f_evbutton8 x=$page_modifier speed=10 nowait
+scroll name=f_evbutton1 x=$page_modifier speed=10
+delete name=grid_page
+delete name=grid
+obj general/ui/record/grid name=grid x=24 y=248 z=0
+delete name=f_evbutton1 suppress
+delete name=f_evbutton2 suppress
+delete name=f_evbutton3 suppress
+delete name=f_evbutton4 suppress
+delete name=f_evbutton5 suppress
+delete name=f_evbutton6 suppress
+delete name=f_evbutton7 suppress
+delete name=f_evbutton8 suppress
+endmacro
+
+// CREATE BUTTONS FOR LAST PAGE
+macro _ANIM_RECORD_CREATE_FAKE_EVI_BUTTON
+{get_real_index $_ITER $current_page real_idx}
+{get_item_img_by_idx $inv_selected $real_idx acc2}
+joinvar icnpath ev/40/ $acc2
+joinvar icnname evbutton $_ITER
+{lookup_icn_pos $_ITER}
+obj $icnpath name=$icnname x=$_x y=$_y z=4
+endmacro
+
+// CREATE BUTTONS FOR NEW PAGE
+macro _ANIM_RECORD_CREATE_FAKE_EVI_BUTTON_PAGE
+{get_real_index $_ITER $current_page real_idx}
+{get_item_img_by_idx $inv_selected $real_idx acc2}
+joinvar icnpath ev/40/ $acc2
+joinvar icnname f_evbutton $_ITER
+{lookup_icn_pos $_ITER}
+flag recordpageleft?
+subvar _x 256
+noflag recordpageleft?
+addvar _x 256
+obj $icnpath name=$icnname x=$_x y=$_y z=4
+endmacro
+
+// OPEN DETAIL VIEW
+macro ANIM_BIGRECORD_OPEN
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx nameplate acc2}
+joinvar nmppath ev/name/ $acc2
+{lookup_icn_pos $_ev_selected}
+subvar _x 2
+subvar _y 2
+
+delete name=nameplate
+delete name=ev_nameplate
+delete name=ev_selector
+delete name=buttonleft
+delete name=buttonright
+delete name=record_arrowleft_btn suppress
+delete name=record_arrowleft_gfx suppress
+delete name=record_arrowright_btn suppress
+delete name=record_arrowright_gfx suppress
+
+obj general/ui/record/bigplate_bg x=256 y=192 name=bigplate_bg z=5
+obj general/ui/record/bigplate_borders x=256 y=192 name=bigplate_borders z=5
+obj general/ui/record/bigbutton_left name=buttonleft x=0 y=232 z=5
+obj general/ui/record/bigbutton_right name=buttonright x=240 y=232 z=5
+obj general/ui/record/nameplate_right x=132 y=230 z=5 name=nameplate_right
+obj general/ui/record/nameplate_left x=33 y=230 z=5 name=nameplate_left
+obj $nmppath name=ev_bignameplate x=69 y=232 z=6
+obj general/ui/record/evframe_small x=$_x y=$_y z=6 name=ev_selector
+
+{_ANIM_CALCULATE_XY_SCROLL_OFFSET 19 230}
+
+scroll name=bigplate_bg x=-256 speed=36 nowait
+scroll name=bigplate_borders x=-256 speed=36 nowait
+scroll name=ev_bignameplate x=27 speed=4 nowait
+scroll name=nameplate_left x=56 speed=8 nowait
+pause 4
+scroll name=nameplate_right x=4 speed=4 nowait
+scroll name=ev_selector x=$_x y=$_y speed=$_frame_speed
+
+pause 3
+delete name=nameplate_left
+delete name=nameplate_right
+delete name=ev_selector
+obj general/ui/record/evframe_grow x=19 y=230 name=ev_selector z=6
+obj general/ui/record/descplate x=0 y=142 name=descplate z=4
+obj general/ui/record/nameplate_expand x=89 y=230 name=nameplate z=5
+scroll name=descplate y=50 speed=10 nowait
+pause 10
+endmacro
+
+// TURN PAGE (DETAIL VIEW)
+macro ANIM_BIGRECORD_PAGETURN
+set bigrecord_offset -256
+set bigrecord_origin 256
+flag bigrecord_left?
+set bigrecord_offset 256
+flag bigrecord_left?
+set bigrecord_origin -256
+delete name=ev_bigdesc
+delete name=record_arrowleft_gfx suppress
+delete name=record_arrowleft_btn suppress
+delete name=record_arrowright_gfx suppress
+delete name=record_arrowright_btn suppress
+
+noflag bigrecord_left?
+delete name=buttonright
+noflag bigrecord_left?
+obj general/ui/record/bigbutton_right_high x=240 y=232 name=buttonright z=6
+flag bigrecord_left?
+delete name=buttonleft
+flag bigrecord_left?
+obj general/ui/record/bigbutton_left_high x=0 y=232 name=buttonleft z=6
+
+obj general/ui/record/bigplate_bg x=$bigrecord_origin y=192 name=bigplate_bg_in z=1
+obj general/ui/record/bigplate x=$bigrecord_origin y=192 name=bigplate_in z=1
+obj general/ui/record/bigplate_borders x=$bigrecord_origin y=192 name=bigplate_borders_in z=2
+
+{get_real_index $_ev_selected $current_page real_idx}
+{get_item_img_by_idx $inv_selected $real_idx acc2}
+joinvar icnpath ev/ $acc2
+flag bigrecord_left?
+obj $icnpath name=ev_bigicon_in x=-235 y=232 z=2
+noflag bigrecord_left?
+obj $icnpath name=ev_bigicon_in x=277 y=232 z=2
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx nameplate acc2}
+joinvar nmppath ev/name/ $acc2
+flag bigrecord_left?
+obj $nmppath name=ev_bignameplate_in x=-160 y=232 z=2
+noflag bigrecord_left?
+obj $nmppath name=ev_bignameplate_in x=352 y=232 z=2
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx data acc2}
+joinvar datapath ev/data/ $acc2
+flag bigrecord_left?
+obj $datapath name=ev_bigdata_in x=-160 y=248 z=2
+noflag bigrecord_left?
+obj $datapath name=ev_bigdata_in x=352 y=248 z=2
+
+scroll name=bigplate_in speed=10 x=$bigrecord_offset nowait
+scroll name=bigplate_bg_in speed=10 x=$bigrecord_offset nowait
+scroll name=bigplate_borders_in speed=10 x=$bigrecord_offset nowait
+scroll name=ev_bigicon_in speed=10 x=$bigrecord_offset nowait
+scroll name=ev_bignameplate_in speed=10 x=$bigrecord_offset nowait
+scroll name=ev_bigdata_in speed=10 x=$bigrecord_offset nowait
+
+scroll name=bigplate speed=10 x=$bigrecord_offset nowait
+scroll name=bigplate_bg speed=10 x=$bigrecord_offset nowait
+scroll name=bigplate_borders speed=10 x=$bigrecord_offset nowait
+scroll name=ev_bigicon speed=10 x=$bigrecord_offset nowait
+scroll name=ev_bignameplate speed=10 x=$bigrecord_offset nowait
+scroll name=ev_bigdata speed=10 x=$bigrecord_offset 
+
+delete name=bigplate_in
+delete name=bigplate_bg_in
+delete name=bigplate_borders_in
+delete name=ev_bigicon_in
+delete name=ev_bignameplate_in
+delete name=ev_bigdata_in
+
+endmacro
+
+
+
+// PRESENT EVIDENCE (SMALL)
+macro ANIM_RECORD_PRESENT
+{flush_record_buttons}
+
+obj general/DS-PyWrightButtons/key_present2_high name=present_btn_noflush x=73 y=192 z=8
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1
+isempty force_inventory?
+obj $acc1 name=switch_btn_noflush x=201 y=192 z=6
+
+delete name=grid
+obj general/ui/record/grid_out x=0 y=192 z=-1 name=grid_in
+delete name=nameplate
+delete name=buttonleft
+delete name=buttonright
+delete name=record_arrowleft_gfx suppress
+delete name=record_arrowleft_btn suppress
+delete name=record_arrowright_gfx suppress
+delete name=record_arrowright_btn suppress
+delete name=ev_nameplate suppress
+obj general/ui/record/nameplate name=nameplate_in x=25 y=228 z=0
+obj general/ui/record/button_left name=buttonleft_in x=0 y=248
+obj general/ui/record/button_right name=buttonright_in x=240 y=248
+
+delete name=banner
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner_in x=0 y=202 z=0
+
+scroll name=nameplate_in y=-46 speed=6 nowait
+//pause 4
+scroll name=buttonleft_in x=-16 speed=4 nowait
+scroll name=buttonright_in x=16 speed=4 nowait
+//pause 4
+
+delete name=ev_selector suppress
+{lookup_icn_pos $_ev_selected}
+subvar _x 2
+subvar _y 2
+obj general/ui/record/evframe_grow x=$_x y=$_y name=ev_selector z=5
+{_ANIM_CALCULATE_XY_SCROLL_OFFSET 96 256}
+scroll name=ev_selector x=$_x y=$_y speed=12 nowait
+setvar _frame_speed 4
+absvar $_x
+absvar $_y
+is_ex _x > 50?
+addvar _frame_speed 2
+is_ex _y > 64?
+addvar _frame_speed 2
+pause $_frame_speed
+{get_real_index $_ev_selected $current_page dat3}
+{get_item_img_by_idx $inv_selected $dat3 dat4}
+joinvar dat4 ev/ $dat4
+obj $dat4 x=98 y=258 z=-1 name=ev_icon
+pause 20
+scroll name=ev_icon y=-128 speed=10 nowait
+scroll name=ev_selector y=-128 speed=10 nowait
+delete name=grid_in
+joinvar dat4 $temp_bigbg2 lines
+obj $dat4 name=recordbg_in y=192 z=-2
+
+goto end_anim_record_close
+
+goto end_anim_record_close
+
+
+label end_anim_record_close
+pause 5
+delete name=ev_selector
+pause 5
+{flush_record}
+delete name=ev_icon
+
+obj general/ui/record/borders_present_top name=record_border1_in x=0 y=192 z=5
+
+isnotempty force_inventory?
+delete name=record_border1_in
+isnotempty force_inventory?
+obj general/ui/record/borders_presentforce_top name=record_border1_in x=0 y=192 z=5
+
+noflag record_noback?
+obj general/ui/record/borders_record_bot name=record_border2_in x=0 y=352 z=5
+flag record_noback?
+obj general/ui/record/borders_noback_bot name=record_border2_in x=0 y=352 z=5
+
+
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner_in x=0 y=202 z=0
+
+
+noflag record_noback?
+obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=352 z=6
+
+pause 10
+
+delete name=present_btn_noflush
+obj general/ui/record/present_high_scrolloff name=present_btn_in x=73 y=192 z=6
+
+delete name=switch_btn_noflush
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1 _scrolloff
+isempty force_inventory?
+obj $acc1 name=switch_btn_in x=201 y=192 z=6
+
+noflag record_noback?
+scroll name=back_btn_in y=32 speed=4 nowait
+
+scroll name=banner_in y=-22 speed=4 nowait
+
+pause 15
+delete name=record_border1_in
+delete name=record_border2_in
+delete name=buttonleft_in
+delete name=buttonright_in
+delete name=nameplate_in
+delete name=banner_in
+delete name=present_btn_in suppress
+delete name=switch_btn_in suppress
+delete name=back_btn_in suppress
+delete name=recordbg_in
+obj $temp_bigbg y=192 z=1 name=fakebg
+set _bigbutton_bg $temp_bigbg
+obj $_bigbutton_comeback name=tempani y=192 z=5
+pause 15
+delete name=tempani
+{set_ui_theme $_bigbutton_theme}
+delete name=fakebg
+"{sound none}{next}"
+endmacro
+
+// PRESENT EVIDENCE (DETAIL VIEW)
+macro ANIM_BIGRECORD_PRESENT
+
+obj general/DS-PyWrightButtons/key_present2_high name=present_btn_noflush x=73 y=192 z=8
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1
+isempty force_inventory?
+obj $acc1 name=switch_btn_noflush x=201 y=192 z=6
+
+delete name=buttonleft
+delete name=buttonright
+delete name=record_arrowleft_gfx
+delete name=record_arrowleft_btn
+delete name=record_arrowright_gfx
+delete name=record_arrowright_btn
+delete name=descplate
+obj general/ui/record/descplate x=0 y=192 name=descplate_out z=0
+obj general/ui/record/bigbutton_left x=0 y=232 name=buttonleft_out z=4
+obj general/ui/record/bigbutton_right x=240 y=232 name=buttonright_out z=4
+obj general/ui/record/bigplate_bg x=0 y=192 name=bigplate_bg_out z=0
+obj general/ui/record/bigplate_noicon x=0 y=192 name=bigplate_out z=0
+obj general/ui/record/bigplate_borders x=0 y=192 name=bigplate_borders_out z=1
+
+{get_item_img_by_idx $inv_selected $real_idx acc2}
+joinvar icnpath ev/ $acc2
+obj $icnpath name=ev_bigicon_out x=21 y=232 z=0
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx nameplate acc2}
+joinvar nmppath ev/name/ $acc2
+obj $nmppath name=ev_bignameplate_out x=96 y=232 z=1
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx data acc2}
+joinvar datapath ev/data/ $acc2
+obj $datapath name=ev_bigdata_out x=92 y=248 z=1
+
+obj general/ui/record/evframe_big x=19 y=230 name=evframe_out z=1
+
+joinvar dat4 $temp_bigbg2 lines
+obj $dat4 name=recordbg_in y=192 z=-2
+
+//pause 10
+{flush_record}
+
+obj general/ui/record/borders_present_top name=record_border1_in x=0 y=192 z=5
+
+isnotempty force_inventory?
+delete name=record_border1_in
+isnotempty force_inventory?
+obj general/ui/record/borders_presentforce_top name=record_border1_in x=0 y=192 z=5
+
+noflag record_noback?
+obj general/ui/record/borders_record_bot name=record_border2_in x=0 y=352 z=5
+flag record_noback?
+obj general/ui/record/borders_noback_bot name=record_border2_in x=0 y=352 z=5
+
+
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner_in x=0 y=202 z=0
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx check acc2}
+delflag _presented_has_check
+is acc2 true?
+setflag _presented_has_check
+flag _presented_has_check?
+obj general/DS-PyWrightButtons/key_check name=checkbtn_out x=154 y=352 z=6
+
+noflag record_noback?
+obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=352 z=6
+
+pause 10
+scroll name=buttonleft_out x=-20 speed=4 nowait
+scroll name=buttonright_out x=20 speed=4 nowait
+scroll name=descplate_out y=-60 speed=8
+delete name=descplate_out
+delete name=buttonleft_out
+delete name=buttonright_out
+scroll name=bigplate_bg_out x=256 speed=16 nowait
+scroll name=bigplate_out x=256 speed=16 nowait
+scroll name=ev_bigdata_out x=256 speed=16 nowait
+scroll name=ev_bignameplate_out x=256 speed=16 nowait
+scroll name=ev_bigicon_out x=80 speed=16 nowait
+scroll name=evframe_out x=80 speed=16 nowait
+pause 4
+scroll name=bigplate_borders_out x=256 speed=16 nowait
+pause 8
+scroll name=ev_bigicon_out y=-128 speed=12 nowait
+scroll name=evframe_out y=-128 speed=12 nowait
+pause 3
+delete name=evframe_out
+pause 5
+delete name=ev_bigicon_out
+delete name=bigplate_bg_out
+delete name=bigplate_out
+delete name=ev_bigdata_out
+delete name=ev_bignameplate_out
+
+
+delete name=present_btn_noflush
+obj general/ui/record/present_high_scrolloff name=present_btn_in x=73 y=192 z=6
+
+delete name=switch_btn_noflush
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1 _scrolloff
+isempty force_inventory?
+obj $acc1 name=switch_btn_in x=201 y=192 z=6
+
+noflag record_noback?
+scroll name=back_btn_in y=32 speed=4 nowait
+flag _presented_has_check?
+scroll name=checkbtn_out y=32 speed=4
+
+scroll name=banner_in y=-22 speed=4 nowait
+
+pause 15
+delete name=record_border1_in
+delete name=record_border2_in
+delete name=buttonleft_in
+delete name=buttonright_in
+delete name=nameplate_in
+delete name=banner_in
+delete name=present_btn_in suppress
+delete name=switch_btn_in suppress
+delete name=back_btn_in suppress
+delete name=checkbtn_out suppress
+delete name=recordbg_in
+obj $temp_bigbg y=192 z=1 name=fakebg
+set _bigbutton_bg $temp_bigbg
+obj $_bigbutton_comeback name=tempani y=192 z=5
+pause 15
+delete name=tempani
+{set_ui_theme $_bigbutton_theme}
+delete name=fakebg
+"{sound none}{next}"
+endmacro
+
+macro _ANIM_CALCULATE_XY_SCROLL_OFFSET
+setvar desired_x $1
+setvar desired_y $2
+delflag x_negative_offset
+delflag y_negative_offset
+
+{lookup_icn_pos $_ev_selected}
+subvar _x 2
+subvar _y 2
+setvar _frame_speed 8
+is_ex _x > 60?
+setvar _frame_speed 16
+is_ex _x > 120?
+setvar _frame_speed 24
+is_ex _x > desired_x?
+setflag x_negative_offset
+is_ex _y > desired_y?
+setflag y_negative_offset
+subvar _x $desired_x
+subvar _y $desired_y
+absvar _x
+absvar _y
+flag x_negative_offset?
+joinvar _x - $_x
+flag y_negative_offset?
+joinvar _y - $_y
+endmacro
+
+macro ANIM_BIGRECORD_CHECK
+delete name=checkbtn
+obj general/DS-PyWrightButtons/key_check_high name=checkbtn_out x=154 y=352 z=6
+pause 10
+scroll name=checkbtn_out y=32 speed=4
+delete name=checkbtn_out
+endmacro
+
+macro ANIM_BIGRECORD_CHECK_CLOSE
+bigrecord_check_decide
+endmacro

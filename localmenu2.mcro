@@ -1,0 +1,488 @@
+### Localmenu2 ###
+### By Armystuntman AKA Jupiter ###
+### Modified by in1tiate ###
+### COMMANDS ###
+
+macro fadechar
+set _fadechar_internal $1
+set _fadechar_name_internal $name
+isnotempty _fadechar_name_internal?
+getvar _speaking _fadechar_name_internal
+
+is _fadechar_internal out?
+fade name=$_speaking start=100 end=0 speed=6 nowait
+is _fadechar_internal in?
+fade name=$_speaking start=0 end=100 speed=6 nowait
+gui Wait
+endmacro
+
+macro setchar
+set _setchar_emo_internal $2
+isnotempty _setchar_emo_internal?
+emo $2 name=$1
+set _speaking $1
+endmacro
+
+macro setemo
+emo $2 name=$1
+endmacro
+
+#localmenuscroll x=0 y=0
+#Included in localmenu2 automatically if scrolldir is defined.
+macro localmenuscroll
+set scroll_internal $scrolldir
+delete name=examine_scroll_button suppress
+delete name=examine_scroll_button suppress
+set internal_scroll_distancex $x
+set internal_scroll_distancey $y
+set menuscroll_name $menuscroll
+is scroll_internal r?
+gui Button {scroll_localmenu_button} x=102 y=360 z=7 name=examine_scroll_button graphic=general/examine_scroll_r graphichigh=general/examine_scroll_r_high try_bottom
+is scroll_internal l?
+gui Button {scroll_localmenu_button} x=102 y=360 z=7 name=examine_scroll_button graphic=general/examine_scroll_l graphichigh=general/examine_scroll_l_high try_bottom
+endmacro
+#When scrolling is activated.
+macro scroll_localmenu_button
+gui_flush
+gui Button {invalid} name=examine_scroll_button graphic=general/examine_scroll_none x=102 y=360 z=5 stack
+sfx Scroll
+delflag localmenu_open
+set _localmenu $menuscroll_name
+
+is scroll_internal l scroll_left
+scroll x=$internal_scroll_distancex y=$internal_scroll_distancey speed=6 nowait
+pause 45 script
+setflag screen_right
+companionout
+goto endmacro
+
+label scroll_left
+scroll x=$internal_scroll_distancex y=$internal_scroll_distancey speed=6 nowait
+pause 45 script
+delflag screen_right
+companionout
+goto endmacro
+
+label endmacro
+
+endmacro
+
+
+#The new localmenu! Example:
+#label menulabel
+#localmenu2 menulabel examine=true move=true
+#goto $_localmenu
+
+#menulabel_examine
+#EXAMINE CODE
+#goto $_localmenu_back
+
+
+macro localmenu2
+flag localmenu_open skiplocalmenu
+
+setflag localmenu_open
+
+{gui_flush}
+set _localmenu $1
+set _localmenu_back $1
+set _localmenu_name $1
+
+#Check variables.
+getvar _examinecheck $_localmenu_back _examine
+getvar _movecheck $_localmenu_back _move
+getvar _talkcheck $_localmenu_back _talk
+getvar _presentcheck $_localmenu_back _present
+getvar _companionmenucheck $_localmenu_back _companionmenu
+
+#SET DEFAULTS
+isempty _examinecheck?
+set _examinecheck $examine
+isempty _movecheck?
+set _movecheck $move
+isempty _talkcheck?
+set _talkcheck $talk
+isempty _presentcheck?
+set _presentcheck $present
+isempty _companionmenucheck?
+set _companionmenucheck $companionmenu
+#reset defaults.
+set examine
+set move
+set talk
+set present
+set companionmenu
+
+#Buttons
+delflag nobody1
+delflag nobody2
+delflag nobody
+is _talkcheck false?
+setflag nobody1
+is _presentcheck false?
+setflag nobody2
+flag nobody1 AND nobody2?
+setflag nobody
+{ANIM_LOCALMENU_STARTUP}
+{reset_buttons}
+{bind_localmenu2}
+set _bigbutton_bg $_bg_main
+setflag menu_local
+
+noflag companion skipcompanionbuttons
+is _companionmenucheck true?
+gui Button {companion_localmenu_button} x=0 y=192 z=6 name=companionbutton graphic=general/localmenu/companion graphichigh=general/localmenu/companion_high try_bottom
+
+isnot _companionmenucheck true?
+gui Button {invalid} x=0 y=192 z=6 name=companionbutton graphic=general/localmenu/companion_nopress try_bottom
+
+label skipcompanionbuttons
+
+label skiplocalmenu
+
+#isnotempty menuscroll?
+localmenuscroll menuscroll=$menuscroll x=$scrollx y=$scrolly scrolldir=$scroll
+
+show_court_record_button
+
+label loop
+gui Wait
+flag localmenu_open loop
+delflag menu_local
+endmacro
+
+#sfx for invalid buttons.
+macro invalid
+sfx Blink
+endmacro
+
+macro reset_buttons
+delete name=startupani suppress
+delete name=presentbutton suppress
+delete name=talkbutton suppress
+delete name=examinebutton suppress
+delete name=movebutton suppress
+delete name=sel_left suppress
+delete name=sel_right suppress
+is _examinecheck true?
+gui Button {examine_localmenu_button} x=8 y=245 z=6 name=examinebutton graphic=general/localmenu/examine  try_bottom
+is _movecheck true?
+gui Button {move_localmenu_button} x=136 y=245 z=6 name=movebutton graphic=general/localmenu/move h try_bottom
+is _talkcheck true?
+gui Button {talk_localmenu_button} x=8 y=301 z=6 name=talkbutton graphic=general/localmenu/talk  try_bottom
+is _presentcheck true?
+gui Button {present_localmenu_button} x=136 y=301 z=6 name=presentbutton graphic=general/localmenu/present try_bottom
+
+//noflag localmenu2_nopress skip_talk_present_buttons
+#Nopress buttons.
+isnot _examinecheck true?
+gui Button {invalid} x=8 y=245 z=6 name=examinebutton graphic=general/localmenu/examine_nopress try_bottom
+isnot _movecheck true?
+gui Button {invalid} x=136 y=245 z=6 name=movebutton graphic=general/localmenu/move_nopress try_bottom
+
+#isnot _talkcheck true?
+#isnot _presentcheck true skip_talk_present_buttons
+
+isnot _talkcheck true?
+gui Button {invalid} x=8 y=302 z=6 name=talkbutton graphic=general/localmenu/talk_nopress try_bottom
+isnot _presentcheck true?
+gui Button {invalid} x=136 y=302 z=6 name=presentbutton graphic=general/localmenu/present_nopress try_bottom
+label skip_talk_present_buttons
+endmacro
+
+#Using arrow keys to navigate menus
+macro bind_localmenu2
+# literally nothing is free
+set _lm2_selected
+gui Button {lm2_upkey} name=lm2_upkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_up
+gui Button {lm2_downkey} name=lm2_downkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_down
+gui Button {lm2_leftkey} name=lm2_leftkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_left
+gui Button {lm2_rightkey} name=lm2_rightkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_right
+endmacro
+
+macro unbind_localmenu2
+delete name=lm2_upkey_handler
+delete name=lm2_downkey_handler
+delete name=lm2_leftkey_handler
+delete name=lm2_rightkey_handler
+endmacro
+
+macro lm2_upkey
+is _lm2_selected talk AND _examinecheck true?
+examine_localmenu_button
+is _lm2_selected present AND _movecheck true?
+move_localmenu_button
+isempty _lm2_selected?
+examine_localmenu_button
+endmacro
+
+macro lm2_downkey
+is _lm2_selected examine AND _talkcheck true?
+talk_localmenu_button
+is _lm2_selected move AND _presentcheck true?
+present_localmenu_button
+isempty _lm2_selected?
+examine_localmenu_button
+endmacro
+
+macro lm2_leftkey
+is _lm2_selected present AND _talkcheck true?
+talk_localmenu_button
+is _lm2_selected move AND _examinecheck true?
+examine_localmenu_button
+isempty _lm2_selected?
+examine_localmenu_button
+endmacro
+
+macro lm2_rightkey
+is _lm2_selected talk AND _presentcheck true?
+present_localmenu_button
+is _lm2_selected examine AND _movecheck true?
+move_localmenu_button
+isempty _lm2_selected?
+examine_localmenu_button
+endmacro
+
+
+#Pressing localmenu2 buttons.
+
+macro present_localmenu_button
+set _lm2_selected present
+reset_buttons
+delete name=presentbutton suppress
+gui Button {present_localmenu_confirm} x=136 y=301 z=6 name=presentbutton graphic=general/localmenu/present hotkey=enter_down try_bottom
+sfx Select
+obj general/localmenu/sel_left x=135 y=296 z=6 name=sel_left
+obj general/localmenu/sel_right x=238 y=296 z=6 name=sel_right
+endmacro
+
+macro present_localmenu_confirm
+sfx Confirm
+delflag menu_local
+{ANIM_LOCALMENU_PRESENT_STARTUP}
+joinvar _localmenu $_localmenu_back _present
+delflag localmenu_open
+{unbind_localmenu2}
+setflag menu_present
+endmacro
+
+macro talk_localmenu_button
+set _lm2_selected talk
+reset_buttons
+delete name=talkbutton suppress
+gui Button {talk_localmenu_confirm} x=8 y=301 z=6 name=talkbutton graphic=general/localmenu/talk hotkey=enter_down try_bottom
+sfx Select
+obj general/localmenu/sel_left x=7 y=296 z=6 name=sel_left
+obj general/localmenu/sel_right x=110 y=296 z=6 name=sel_right
+endmacro
+
+macro talk_localmenu_confirm
+sfx Confirm
+delflag menu_local
+{ANIM_LOCALMENU_TALK_STARTUP}
+joinvar _localmenu $_localmenu_back _talk
+delflag localmenu_open
+{unbind_localmenu2}
+endmacro
+
+macro move_localmenu_button
+set _lm2_selected move
+reset_buttons
+delete name=movebutton suppress
+gui Button {move_localmenu_confirm} x=136 y=245 z=6 name=movebutton graphic=general/localmenu/move hotkey=enter_down try_bottom
+sfx Select
+obj general/localmenu/sel_left x=135 y=240 z=6 name=sel_left
+obj general/localmenu/sel_right x=238 y=240 z=6 name=sel_right
+endmacro
+
+macro move_localmenu_confirm
+sfx Confirm
+delflag menu_local
+{ANIM_LOCALMENU_MOVE_STARTUP}
+joinvar _localmenu $_localmenu_name _move
+delflag localmenu_open
+{unbind_localmenu2}
+// Increment stat
+joinvar ptr1 stat_ $__case_number _wanderer
+is_ex __case_number < 5 AND __case_number > 0?
+addvar $ptr1 1
+set ptr1
+endmacro
+
+macro examine_localmenu_button
+set _lm2_selected examine
+reset_buttons
+delete name=examinebutton suppress
+gui Button {examine_localmenu_confirm} x=8 y=245 z=6 name=examinebutton graphic=general/localmenu/examine hotkey=enter_down try_bottom
+sfx Select
+obj general/localmenu/sel_left x=7 y=240 z=6 name=sel_left
+obj general/localmenu/sel_right x=110 y=240 z=6 name=sel_right
+endmacro
+
+macro examine_localmenu_confirm
+sfx Confirm
+delflag menu_local
+{ANIM_LOCALMENU_EXAMINE_STARTUP}
+joinvar _localmenu $_localmenu_name _examine
+delflag localmenu_open
+{unbind_localmenu2}
+endmacro
+
+###########
+#EXAMINE:
+#Examine scroll on.
+macro examine_scrollon
+set _examine_use false
+flag examine_menu_open skip
+gui_flush
+set examine_scrollon_dark $dark
+fg examine stack y=192 z=5
+fade start=100 end=0 speed=10 name=guibg nowait
+
+label skip_dark
+is examine_scrollon_dark false skip_dark
+fg black name=darkexamine z=6
+fade start=0 end=40 speed=4 name=darkexamine nowait
+label skip_dark
+
+set scrollon_bg_x $x
+set scrollon_bg_y $y
+isempty scrollon_bg_x?
+set scrollon_bg_x 0
+isempty scrollon_bg_y?
+set scrollon_bg_y 0
+set scrollon_bg_is_fg $fg
+
+disable_court_record_button
+isnot scrollon_bg_is_fg true?
+bg $1 stack name=backgroundexamine x=$scrollon_bg_x y=$scrollon_bg_y z=4 nowait
+is scrollon_bg_is_fg true?
+fg $1 stack name=backgroundexamine x=$scrollon_bg_x y=$scrollon_bg_y z=4 nowait
+fade start=0 end=100 speed=6 name=backgroundexamine nowait
+pause 10 script
+sfx Scroll
+set internal_scrollon_adjustment_fix $fix_bottom
+isnot internal_scrollon_adjustment_fix true?
+scroll name=backgroundexamine y=192 speed=20 nowait
+is internal_scrollon_adjustment_fix true?
+scroll name=backgroundexamine y=177 speed=20 nowait
+setflag examine_menu_open
+set examine_nocr $nocr
+isnot examine_nocr true {enable_court_record_button}
+label skip
+endmacro
+
+#Disable examine mode, MUST be run when out of examine.
+macro examine_scrolloff
+noflag examine_menu_open skip
+delflag examine_menu_open
+isnot examine_scrollon_dark false?
+fade start=40 end=0 speed=6 name=darkexamine nowait
+isnot internal_scrollon_adjustment_fix true?
+scroll name=backgroundexamine y=-192 speed=20 nowait
+is internal_scrollon_adjustment_fix true?
+scroll name=backgroundexamine y=-177 speed=20 nowait
+sfx Scroll
+pause 10 script
+fade start=100 end=0 speed=10 name=backgroundexamine nowait
+fade start=0 end=100 speed=10 name=guibg nowait
+pause 5 script
+set _cr_button true
+gui_flush
+delete name=backgroundexamine suppress
+delete name=darkexamine suppress
+label skip
+set _examine_use
+endmacro
+
+###GUI FLUSHING###
+#fancy screen clearing, to remove specific elements seamlessly.
+
+#Flush lower screen, re-add lower screen bg.
+macro gui_flush
+delete name=delaymasker suppress
+{gui_flush_buttons}
+clear bottom
+bg main2 y=192 stack z=-5 name=guibg
+delete name=penalty suppress
+delete name=darkexamine suppress
+endmacro
+
+#Flush lower screen, do not re-add background.
+macro gui_flush2
+{gui_flush_buttons}
+clear bottom
+delete name=penalty suppress
+delete name=darkexamine suppress
+endmacro
+
+#Flushes everything, re-adds bottom background. A fancy clear command.
+#Also resets localmenu variables. This is basically an "end of scene" command.
+macro gui_clear
+clear
+"{spd0}{sound/nothing}{next}"
+delflag screen_right
+delflag localmenu_open
+endmacro
+
+#Flushes bottom GUI, fades, then clears everything but re-adds gui bg.
+macro gui_clear_fade
+fg fadeout2 name=fadein_internal
+pause 15 script
+clear
+"{spd0}{sound/nothing}{next}"
+endmacro
+
+#Flushes bottom GUI, fades + music fade, then clears everything but re-adds gui bg.
+macro end_scene
+
+fg fadeout2 name=fadein_internal nowait
+music_fade_out_fast
+clear
+"{spd0}{sound/nothing}{next}"
+endmacro
+
+
+#Deletes custom GUI buttons, add your buttons to this list to simplify things (but try not to add too many!)
+macro gui_flush_buttons
+delete name=examine_scroll_button suppress
+delete name=talkbutton suppress
+delete name=movebutton suppress
+delete name=examinebutton suppress
+delete name=presentbutton suppress
+delete name=examine_scroll_r suppress
+delete name=examine_scroll_l suppress
+delete name=examine_scroll suppress
+delete name=examine_scroll_none suppress
+delete name=companionbutton suppress
+delete name=back suppress
+delete name=_presentbut_ suppress
+delete name=sel_left suppress
+delete name=sel_right suppress
+delete name=back_btn suppress
+delete name=scriptfader suppress
+delete name=to1_btn suppress
+delete name=to2_btn suppress
+delete name=to3_btn suppress
+delete name=to4_btn suppress
+delete name=to_upkey_handler
+delete name=to_downkey_handler
+delete name=mo_upkey_handler
+delete name=mo_downkey_handler
+delete name=movebg suppress
+delete name=thumb suppress
+delete name=mo1_btn suppress
+delete name=mo2_btn suppress
+delete name=mo3_btn suppress
+delete name=mo4_btn suppress
+delete name=lm2_upkey_handler
+delete name=lm2_downkey_handler
+delete name=lm2_leftkey_handler
+delete name=lm2_rightkey_handler
+delete name=borders suppress
+delete name=fakebg suppress
+delete name=fakebigbutton suppress
+delete name=fakebigarrow suppress
+delete name=fakefakebigarrow suppress
+endmacro
+

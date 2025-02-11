@@ -1,0 +1,241 @@
+macro ANIM_CROSSEXAM_START
+obj bg/main2 z=5 name=tempbg y=192 z=6
+obj fg/scanlines z=8 name=fscanlines y=192
+obj bg/borders z=9 name=fborders y=192
+obj $_bigbutton_leave name=tempani y=0 z=7
+pause 13
+delete name=tempani
+obj general/ce-ani name=crossexam_splash z=3
+// Do the face-off slice. We have to fake an easing curve here lol
+joinvar _vs_def general/vs/ $1
+joinvar _vs_pro general/vs/ $2
+obj general/vs/slice name=slicedef y=219 z=7
+obj general/vs/slice name=slicepro y=296 z=7
+pause 3
+obj $_vs_def name=vsdef y=219 z=7 x=-155
+obj $_vs_pro name=vspro y=296 z=7 x=155
+scroll name=vsdef x=15 speed=15 nowait
+scroll name=vspro x=-15 speed=15
+pause 1
+scroll name=vsdef x=24 speed=24 nowait
+scroll name=vspro x=-24 speed=24
+pause 1
+scroll name=vsdef x=26 speed=26 nowait
+scroll name=vspro x=-26 speed=26
+pause 1
+scroll name=vsdef x=35 speed=35 nowait
+scroll name=vspro x=-35 speed=35
+pause 1
+scroll name=vsdef x=21 speed=21 nowait
+scroll name=vspro x=-21 speed=21
+pause 1
+scroll name=vsdef x=25 speed=6 nowait
+scroll name=vspro x=-25 speed=6 nowait
+// Flash coincides with the CE splash and we also swap out the vscross bg here
+obj bg/bigwhite z=10 name=bigflash
+delete name=tempbg
+obj bg/ajcrossvsbg name=tempbg y=192 z=6
+pause 3
+fade name=bigflash out speed=50
+delete name=bigflash
+pause 4
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+scroll name=vsdef x=1 speed=1 nowait
+scroll name=vspro x=-1 speed=1
+pause 5
+pause 75
+// Delete the slices slightly earlier than we start the fade to white for accuracy
+delete name=slicedef
+delete name=slicepro
+delete name=vsdef
+delete name=vspro
+pause 5
+obj bg/white y=192 z=10 name=bigflash
+fade name=bigflash in speed=10 nowait
+pause 10
+delete name=tempbg
+obj bg/main2 name=tempbg y=192 z=6
+pause 10
+fade name=bigflash out speed=10 nowait
+pause 10
+delete name=bigflash
+obj $_bigbutton_comeback name=tempani y=192 z=7
+pause 13
+delete name=tempbg
+delete name=tempani
+delete name=fscanlines
+delete name=fborders
+delete name=crossexam_splash
+endmacro
+
+### PRESS SEQUENCE
+### basically the contra sequence
+### but a little more complicated
+### takes defense character as an argument
+macro ANIM_CROSSEXAM_PRESS
+delete name=penalty suppress
+delete name=fbutton_press
+obj general/DS-PyWrightButtons/key_press_high name=fbutton_press y=192 z=6
+obj bg/main2 z=5 name=tempbg y=192
+obj general/ui/cebutton1 name=ebutton1 x=0 y=257 z=5
+obj general/ui/cebutton2 name=ebutton2 x=150 y=257 z=5
+scroll name=ebutton1 x=-106 speed=10 nowait
+scroll name=ebutton2 x=106 speed=10 nowait
+
+delete name=fbutton_press suppress
+delete name=fbutton_present suppress
+obj general/ui/press_high_scrolloff name=press_scrolloff y=192 z=6
+obj general/ui/present_scrolloff name=present_scrolloff y=192 x=164 z=6
+
+setvar shout_char $1
+joinvar shout_src $1 /
+joinvar shout_sfx $shout_src holdit
+setvar shout_gfx general/shouts/holdit
+isempty shout_char ?
+setvar shout_sfx objection
+msgwindow_hide
+obj $shout_gfx z=9 name=interject
+sfx $shout_sfx
+pause 2
+obj bg/white z=9 name=flash
+pause 2
+delete name=flash
+pause 10
+obj general/ui/record_scrollon y=192 x=154 z=6 name=record_scrollon
+obj $_bigbutton_comeback name=tempani y=192 z=5
+pause 8
+delete name=tempani
+delete name=tempbg
+"{next}"
+pause 11
+delete name=interject
+pause 10
+
+delete name=ebutton1
+delete name=ebutton2
+delete name=press_scrolloff
+delete name=present_scrolloff
+
+#Characters
+char $_sscroll_defense e=$_sscroll_def_e name=dc x=-540 stack noauto
+char $_sscroll_witness e=$_sscroll_wit_e name=wc x=0 stack noauto
+
+#Tables
+fg $sscroll_deffg x=-540 name=db
+joinvar sscroll_temp fg/ $sscroll_witfg
+obj $sscroll_temp x=0 name=wb
+
+#Scrolling
+scroll name=wc x=280 speed=$sscroll_speed_wshort nowait
+scroll name=wb x=280 speed=$sscroll_speed_wshort nowait
+scroll name=dc x=540 speed=$sscroll_speed_wlong nowait
+scroll name=db x=540 speed=$sscroll_speed_wlong nowait
+
+# start scrolling the screen left
+joinvar dat1 $sscroll_prefix wit2def
+bg $dat1 stack
+set dat1
+
+#Go away animation
+pause 30
+delete name=wb
+bg $sscroll_defbg
+fg $sscroll_deffg
+char $_sscroll_defense e=$_sscroll_def_e
+
+pause 10
+noflag no_msgwindow_slide?
+msgwindow_slideup
+_show_fake_cr_button
+delete name=record_scrollon
+endmacro
+
+### CONTRADICTION SEQUENCE
+### usage: ANIM_CROSSEXAM_PRESENT [character]
+### MAKE SURE YOU RUN init_sscroll AT LEAST ONCE FIRST
+macro ANIM_CROSSEXAM_PRESENT
+# cleanup stray ui
+# shouldn't be needed w/ later court record opening animation ~innovations~
+delete name=fbutton_press suppress
+delete name=fbutton_present suppress
+# First, do the dramatic shout and lower screen closeup
+joinvar dramachar general/closeup/ $1
+obj bg/white name=flash z=7 y=192
+obj bg/zoom/d name=zoomies z=5 y=192
+obj $dramachar name=closeup x=-256 y=192 z=5
+obj bg/borders name=borders z=6 y=192
+fade name=flash start=100 end=0 speed=10 nowait
+delete name=flash
+scroll name=closeup x=256 speed=13 nowait
+shake 25 25 nowait
+#if the wrong present flag isn't set, stop the music
+noflag badcontra?
+mus
+{shoutdrama objection $1}
+
+#Characters
+char $_meta_def e=$_meta_d-e name=dc x=-540 stack noauto
+char $_meta_wit e=$_meta_w-e name=wc x=0 stack noauto
+
+#Tables
+fg $sscroll_deffg x=-540 name=db
+joinvar sscroll_temp fg/ $sscroll_witfg
+obj $sscroll_temp x=0 name=wb
+
+#Scrolling
+scroll name=wc x=280 speed=$sscroll_speed_wshort nowait
+scroll name=wb x=280 speed=$sscroll_speed_wshort nowait
+scroll name=dc x=540 speed=$sscroll_speed_wlong nowait
+scroll name=db x=540 speed=$sscroll_speed_wlong nowait
+
+# start scrolling the screen left
+joinvar dat1 $sscroll_prefix wit2def
+bg $dat1 stack
+set dat1
+
+#Cleanup
+obj bg/black z=5 y=192 name=dramafadeobj
+fade name=dramafadeobj in speed=8 nowait
+pause 10
+delete name=dramafadeobj
+delete name=closeup
+delete name=zoomies
+obj bg/main2 z=5 name=tempbg y=192
+obj $_bigbutton_comeback name=tempani y=192 z=5
+obj general/ui/record_scrollon y=192 x=154 z=6 name=record_scrollon
+pause 8
+"{next}"
+delete name=tempbg
+delete name=tempani
+delete name=borders
+pause 9
+delete name=wb
+bg $sscroll_defbg
+fg $sscroll_deffg
+char $_meta_def e=$_meta_d-e
+
+pause 10
+{msgwindow_slideup}
+_show_fake_cr_button
+delete name=record_scrollon
+endmacro

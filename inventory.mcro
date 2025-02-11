@@ -1,0 +1,109 @@
+### INVENTORY.MCRO
+### by in1tiate
+### Aims to replace the in-built evidence system
+
+macro initialize_inventories
+// Surely six pages is enough.
+ARRAY_CREATE evidence 48
+ARRAY_CREATE profiles 48
+//ARRAY_CREATE spells 48
+{update_inventory_pages}
+endmacro
+
+macro update_inventory_pages
+set ev_pages 1
+set pr_pages 1
+//set sp_pages 1
+
+{ARRAY_GET_USED evidence i_mat2}
+
+is_ex i_mat2 > 8?
+set ev_pages 2
+is_ex i_mat2 > 16?
+set ev_pages 3
+is_ex i_mat2 > 24?
+set ev_pages 4
+is_ex i_mat2 > 32?
+set ev_pages 5
+is_ex i_mat2 > 40?
+set ev_pages 6
+
+{ARRAY_GET_USED profiles i_mat2}
+
+is_ex i_mat2 > 8?
+set pr_pages 2
+is_ex i_mat2 > 16?
+set pr_pages 3
+is_ex i_mat2 > 24?
+set pr_pages 4
+is_ex i_mat2 > 32?
+set pr_pages 5
+is_ex i_mat2 > 40?
+set pr_pages 6
+
+//{ARRAY_GET_USED spells i_mat2}
+//
+//is_ex i_mat2 > 8?
+//set sp_pages 2
+//is_ex i_mat2 > 16?
+//set sp_pages 3
+//is_ex i_mat2 > 24?
+//set sp_pages 4
+//is_ex i_mat2 > 32?
+//set sp_pages 5
+//is_ex i_mat2 > 40?
+//set sp_pages 6
+
+set i_mat2 
+endmacro
+
+macro add_item
+{ARRAY_APPEND $1 $2}
+{update_inventory_pages}
+endmacro
+
+macro del_item
+{ARRAY_GET_IDX_OF_ITEM $1 $2 i_dat2}
+{ARRAY_DELETE evidence $i_dat2}
+set i_dat2
+{update_inventory_pages}
+endmacro
+
+macro insert_item
+{ARRAY_INSERT $1 $2}
+{update_inventory_pages}
+endmacro
+
+macro get_item_name
+{ARRAY_GET_IDX_OF_ITEM $1 $2 i_dat2}
+{ARRAY_GET_ITEM_PROP_BY_IDX $1 $i_dat2 name i_dat2}
+set $3 $i_dat2
+set i_dat2
+endmacro
+
+macro get_item_nameplate
+{ARRAY_GET_IDX_OF_ITEM $1 $2 i_dat2}
+{ARRAY_GET_ITEM_PROP_BY_IDX $1 $i_dat2 nameplate i_dat2}
+set $3 $i_dat2
+set i_dat2
+endmacro
+
+macro get_item_img
+{ARRAY_GET_IDX_OF_ITEM $1 $2 i_dat2}
+{ARRAY_GET_ITEM_PROP_BY_IDX $1 $i_dat2 img i_dat2}
+set $3 $i_dat2
+set i_dat2
+endmacro
+
+macro get_item_checkscript
+{ARRAY_GET_IDX_OF_ITEM $1 $2 i_dat2}
+{ARRAY_GET_ITEM_PROP_BY_IDX $1 $i_mat2 checkscript i_dat2}
+set $2 $i_dat2
+set i_dat2
+endmacro
+
+macro get_item_img_by_idx
+{ARRAY_GET_ITEM_PROP_BY_IDX $1 $2 img i_dat2}
+set $3 $i_dat2
+set i_dat2
+endmacro

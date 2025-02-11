@@ -1,0 +1,166 @@
+macro disable_saveload
+delete name=nosaving suppress
+set _allow_saveload false
+obj nosaving name=nosaving x=231 y=-25 z=1000
+fade name=nosaving start=100 end=50 speed=50 nowait
+scroll name=nosaving y=25 nowait speed=5
+endmacro
+
+macro enable_saveload
+set _allow_saveload true
+scroll name=nosaving y=-25 nowait speed=5
+endmacro
+
+###COURT RECORD BUTTON###
+
+macro _default_court_record_button
+{_show_fake_cr_button}
+gui Button {_crbut} name=_crbut_ graphic=general/DS-PyWrightButtons/key_record graphichigh=general/DS-PyWrightButtons/key_record_high x=154 y=192 hotkey=k_tab z=6 try_bottom
+endmacro
+
+macro _show_fake_cr_button
+{_hide_fake_cr_button}
+obj general/DS-PyWrightButtons/key_record name=fake_cr x=154 y=192 z=6 try_bottom
+endmacro
+
+macro _hide_fake_cr_button
+delete name=fake_cr suppress
+endmacro
+
+macro show_court_record_button
+isnot _cr_button exit
+{hide_court_record_button}
+{_default_court_record_button}
+label exit
+endmacro
+
+macro hide_court_record_button
+delete name=_crbut_ suppress
+endmacro
+
+macro disable_court_record_button
+set _cr_button false
+delete name=_crbut_ suppress
+endmacro
+
+macro enable_court_record_button
+set _cr_button true
+endmacro
+
+macro _crbut
+isnot _cr_button exit
+{r2_maskdelay}
+{clear_presentflags}
+showrecord2
+delflag closerecord
+label exit
+endmacro
+
+###END COURT RECORD BUTTON
+
+
+###PRESS BUTTON###
+#Command to activate
+macro _pressbut
+callpress
+endmacro
+
+#Command to display
+macro _default_press_button
+gui Button {_pressbut} name=_pressbut_ graphic=general/DS-PyWrightButtons/key_borderless_press graphichigh=general/DS-PyWrightButtons/key_borderless_press_high x=0 y=192 z=6 try_bottom
+endmacro
+
+#Command to show it, deleting old one if it exists
+macro show_press_button
+{hide_press_button}
+{_default_press_button}
+endmacro
+
+#Command to hide it
+macro hide_press_button
+delete name=_pressbut_ suppress
+endmacro
+###END PRESS BUTTON###
+
+
+
+
+
+###PRESENT BUTTON###
+#Command to activate
+macro _presentbut
+showpresent
+endmacro
+
+#Command to display
+macro _default_present_button
+gui Button {_presentbut} name=_presentbut_ graphic=general/DS-PyWrightButtons/key_borderless_present graphichigh=general/DS-PyWrightButtons/key_borderless_present_high x=164 y=192 z=6 try_bottom
+endmacro
+
+#Command to show it, deleting old one if it exists
+macro show_present_button
+{hide_present_button}
+{_default_present_button}
+endmacro
+
+#Command to hide it
+macro hide_present_button
+delete name=_presentbut_ suppress
+endmacro
+###END PRESENT BUTTON###
+
+
+
+###PRESENT BUTTON IN COURT RECORD###
+#Command to activate
+macro _presentbut2
+callpresent
+endmacro
+
+#Command to display
+macro _default_present_button2
+gui Button {_presentbut2} name=_presentbut2_ graphic=general/DS-PyWrightButtons/key_present2 graphichigh=general/DS-PyWrightButtons/key_present2_high x=90 y=192 z=12 try_bottom
+endmacro
+
+#Command to show it, deleting old one if it exists
+macro show_present_button2
+{hide_present_button2}
+{_default_present_button2}
+endmacro
+
+#Command to hide it
+macro hide_present_button2
+delete name=_presentbut2_ suppress
+endmacro
+###END PRESENT BUTTON IN COURT RECORD###
+
+
+###TBON TBOFF MACROS###
+macro flicker_tb_off
+delete name=_tb_blinker_ suppress
+isnot _tb_on = 1 end
+timer 20 flicker_tb_on name=tbon_timer
+label end
+endmacro
+
+macro flicker_tb_on
+isnot _tb_on = 1 end
+{tbon}
+goto end
+label end
+endmacro
+
+macro tbon
+delete name=_tb_blinker_ suppress
+set _tb_on 1
+timer 60 flicker_tb_off name=tboff_timer
+is _testimony_blinker?
+fg testimony name=_tb_blinker_ x=-90 y=-76
+endmacro
+
+macro tboff
+set _tb_on 0
+delete name=_tb_blinker_ suppress
+delete name=tboff_timer suppress
+delete name=tbon_timer suppress
+endmacro

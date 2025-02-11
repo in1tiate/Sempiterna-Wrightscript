@@ -1,0 +1,1095 @@
+// Clear present-specific flags
+// so they don't affect the inventory screen
+macro clear_presentflags
+set force_inventory
+endmacro
+
+// internal, masks inherent 1 frame script block
+// from macro calls. TODO: skip this in GodotWright
+macro r2_maskdelay
+getvar temp_bigbg2 _bigbutton_bg
+obj $temp_bigbg2 name=recordbg_in y=192 z=-1
+obj general/DS-PyWrightButtons/key_record_high x=154 y=192 name=crbutfake z=6
+
+flag menu_local?
+set __goawayani general/localmenu/static
+flag menu_local AND nobody?
+set __goawayani general/localmenu/static2
+flag menu_local?
+obj $__goawayani y=192 z=1 name=goaway_ani
+noflag menu_local AND menu_move AND menu_talk AND menu_present?
+obj general/bigbutton name=tempani y=0 z=5
+endmacro
+
+// internal, deletes elements that are created
+// in order to mask pywright's inherent
+// 1 frame script blocking on macro calls
+macro r2_wipemask
+delete name=recordbg_in suppress
+delete name=goaway_ani suppress
+delete name=crbutfake suppress
+delete name=tempani suppress
+endmacro
+
+// Get the real (inventory) index of an item
+// given its paged index and the page it's on
+// then store it in resultvar
+// Usage: get_real_index <paged_idx> <page> <resultvar>
+macro get_real_index
+// store the paged index given by the caller
+setvar mat_paged_idx $1
+// set the mat1 "register" to the item's page and subtract 1 from it
+// to get the number of previous pages
+setvar mat1 $2
+subvar mat1 1
+// multiply the number of previous pages by the items per page
+mulvar mat1 8
+// add the paged index to that
+addvar mat_paged_idx $mat1 
+// store the final value into the caller's variable and clear the mat1 register
+set mat1
+setvar $3 $mat_paged_idx
+endmacro
+
+// Get the paged index of an item
+// given its real (inventory) index
+// and the page it's on, then store
+// it in resultvar
+// Usage: get_paged_index <real_idx> <page> <resultvar>
+macro get_paged_index
+// store the real index given by the caller
+setvar mat_real_idx $1
+// store the page given by the caller
+setvar mat_page $2
+subvar mat_page 1
+mulvar mat_page 8
+subvar mat_real_idx $mat_page
+setvar $3 $mat_real_idx
+endmacro
+
+// Handles opening and closing the record UI and cleanly
+// letting go of program execution
+// Usage: {showrecord2}
+// This is called by the default CR button,
+// do not call this yourself unless you know
+// what you're doing
+macro showrecord2
+delflag presented
+delflag closerecord
+{disable_saveload}
+sfx Scroll
+delete name=clickmask suppress
+obj fg/empty name=clickmask z=10
+isempty inv_selected?
+set inv_selected evidence
+isempty _ev_selected?
+set _ev_selected 1
+isnotempty force_inventory?
+set inv_selected $force_inventory
+{disable_court_record_button}
+{gui_flush}
+{r2_wipemask}
+flag presentmode?
+obj general/ui/record_scrolloff name=record_scrolloff x=154 y=192 z=6
+noflag presentmode?
+obj general/ui/record_high_scrolloff name=record_scrolloff x=154 y=192 z=6
+flag menu_move r2_startfade
+flag menu_talk r2_startfade
+flag menu_present r2_startpresent
+flag menu_local r2_startlocal fail=r2_startnormal
+
+// For when the text advance button
+// is on screen
+label r2_startnormal
+set _bigbutton_img none
+getvar temp_bigbg2 _bigbutton_bg
+obj $temp_bigbg2 y=192 name=tempbg
+obj $_bigbutton_leave name=tempani y=0 z=5
+pause 15
+delete name=tempani
+delete name=tempbg
+goto r2_startfinish
+
+// For presenting evidence from
+// the localmenu
+label r2_startpresent
+set _bigbutton_img none
+getvar temp_bigbg2 _bigbutton_bg
+obj $temp_bigbg2 y=192 name=tempbg
+pause 8
+delete name=tempbg
+goto r2_startfinish
+
+// Generic fade transition
+label r2_startfade
+{ANIM_RECORD_FADEOUT}
+set _bigbutton_img none
+getvar temp_bigbg2 _bigbutton_bg
+obj $temp_bigbg2 y=192 name=tempbg
+pause 8
+delete name=tempbg
+goto r2_startfinish
+
+// For opening the court record
+// from the main localmenu screen
+label r2_startlocal
+{ANIM_RECORD_LOCALOUT}
+set _bigbutton_img none
+getvar temp_bigbg2 _bigbutton_bg
+obj $temp_bigbg2 y=192 name=tempbg
+pause 4
+delete name=tempbg
+goto r2_startfinish
+
+label r2_startfinish
+{ANIM_RECORD_OPEN}
+label skip_record_intro
+delflag bigrecord
+
+{setup_record2}
+setflag nosound
+{evbutton1_select}
+label record2_loop
+gui Wait
+noflag closerecord?
+goto record2_loop
+flag presented skipcloseanim
+{ANIM_RECORD_CLOSE}
+label skipcloseanim
+set _textbox_show_button true
+{enable_court_record_button}
+{show_court_record_button}
+{record2_finish}
+{enable_saveload}
+endmacro
+
+// Stores the currently selected inventory's
+// page number in a convenient shared var
+// for use in maths
+macro update_max_pages
+is inv_selected evidence?
+set max_pages $ev_pages
+is inv_selected profiles?
+set max_pages $pr_pages
+endmacro
+
+
+// Setup record UI correctly
+// based on the current flags
+macro setup_record2
+{unbind_record2}
+{bind_record2}
+getvar temp_bigbg _bigbutton_bg
+set _bigbutton_bg none
+set _bigbutton_img none
+set _textbox_show_button true
+obj $temp_bigbg name=recordbg y=192 z=-1
+obj general/ui/record/grid name=grid x=24 y=248 z=0
+{update_max_pages}
+
+// Draw correct left-page button
+is_ex max_pages > 1?
+gui Button {record_pageleft} name=buttonleft x=0 y=248 z=5 graphic=general/ui/record/button_left
+is_ex max_pages == 1?
+obj general/ui/record/button_left name=buttonleft x=0 y=248 z=5
+is_ex max_pages > 1?
+obj general/ui/record/arrow_left name=record_arrowleft_gfx x=0 y=290 z=5
+is_ex max_pages > 1?
+gui Button {record_pageleft} name=record_arrowleft_btn x=0 y=290 z=5 graphic=general/ui/record/arrowdummy
+
+// Draw correct right-page button
+is_ex max_pages > 1?
+gui Button {record_pageright} name=buttonright x=240 y=248 z=5 graphic=general/ui/record/button_right
+is_ex max_pages == 1?
+obj general/ui/record/button_right name=buttonright x=240 y=248 z=5
+is_ex max_pages > 1?
+obj general/ui/record/arrow_right name=record_arrowright_gfx x=243 y=290 z=5
+is_ex max_pages > 1?
+gui Button {record_pageright} name=record_arrowright_btn x=243 y=290 z=5 graphic=general/ui/record/arrowdummy
+
+// Draw the record UI according to mode flags
+obj general/ui/record/nameplate name=nameplate x=25 y=228 z=0
+noflag presentmode?
+obj general/ui/record/borders_record_top name=record_border1 x=0 y=192 z=5
+flag presentmode?
+obj general/ui/record/borders_present_top name=record_border1 x=0 y=192 z=5
+isnotempty force_inventory?
+delete name=record_border1
+isnotempty force_inventory?
+obj general/ui/record/borders_presentforce_top name=record_border1 x=0 y=192 z=5
+noflag record_noback?
+obj general/ui/record/borders_record_bot name=record_border2 x=0 y=352 z=5
+flag record_noback?
+obj general/ui/record/borders_noback_bot name=record_border2 x=0 y=352 z=5
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner x=0 y=202 z=0
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1
+isempty force_inventory?
+gui Button {switch_inventory} name=switch_btn x=201 y=192 graphic=$acc1 hotkey=k_tab
+flag presentmode?
+gui Button {do_present} name=present_btn x=73 y=192 graphic=general/DS-PyWrightButtons/key_present2 hotkey=k_x
+noflag record_noback?
+gui Button {exit_record} name=back_btn x=0 y=352 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+// draw evidence icons, name graphic, etc
+{reset_record_buttons}
+endmacro
+
+// Handle presenting evidence
+macro do_present
+delflag magatama_presented
+{get_current_evidence}
+
+//Special case: magatama during localmenu with psyche-locks
+is _selected magatama?
+setflag magatama_presented
+flag magatama_presented AND psycholock_active?
+setflag shoutmode
+flag magatama_presented AND psycholock_active?
+setvar _present_shout takethat
+flag magatama_presented AND psycholock_active?
+setvar _present_char phoenix
+
+noflag shoutmode?
+sfx Confirm
+flag shoutmode?
+msgwindow_qreset
+flag shoutmode?
+shout_nowait $_present_shout $_present_char
+delete name=present_omnibg suppress
+{unbind_record2}
+flag bigrecord lbl_bigrecord_present
+{ANIM_RECORD_PRESENT}
+goto finishdopresent
+label lbl_bigrecord_present
+{ANIM_BIGRECORD_PRESENT}
+
+label finishdopresent
+delflag bigrecord
+delflag _lastcheck
+setflag presented
+setflag closerecord
+endmacro
+
+// Get the name of the currently
+// selected evidence and set it
+// to the _selected global
+macro get_current_evidence
+{get_real_index $_ev_selected $current_page acc1}
+{ARRAY_GET_ITEM_BY_IDX $inv_selected $acc1 acc1}
+set _selected $acc1
+endmacro
+
+// Switch to the next inventory in the stack
+macro switch_inventory
+sfx Scroll
+{ANIM_RECORD_SWITCH}
+{get_next_inventory dat1 $inv_selected}
+set inv_selected $dat1
+{update_max_pages}
+is_ex current_page > max_pages?
+set current_page $max_pages
+{flush_record}
+{setup_record2}
+{update_current_ev}
+setflag nosound
+{select_current_ev}
+endmacro
+
+// Get the next inventory in the stack
+// given the inventory to check against
+// Usage: get_next_inventory <resultvar> <inv_to_check>
+macro get_next_inventory
+set inv_to_check $2
+is inv_to_check evidence?
+set $1 profiles
+is inv_to_check profiles?
+set $1 evidence
+endmacro
+
+// Corrects the currently selected item index
+// if it would select an invalid item
+// Usage: {update_current_ev}
+macro update_current_ev
+// get the number of items in the new inventory
+{ARRAY_GET_USED $inv_selected act1}
+// get the real index of the current evidence selection
+{get_real_index $_ev_selected $current_page real_idx}
+// get the paged index of the last item on the last page
+{get_paged_index $act1 $max_pages act2}
+// if the real index exceeds the number of items
+// set the new index to the paged index of the last item
+// prevents selecting nonexistent items when switching
+// between non-full pages of inventories
+is_ex real_idx > act1?
+set _ev_selected $act2
+endmacro
+
+// Silently selects the current item
+// in the inventory UI. Used to avoid
+// "deselecting" items when turning
+// pages or switching inventories
+macro select_current_ev
+is_ex _ev_selected == 8?
+evbutton8_select
+is_ex _ev_selected == 7?
+evbutton7_select
+is_ex _ev_selected == 6?
+evbutton6_select
+is_ex _ev_selected == 5?
+evbutton5_select
+is_ex _ev_selected == 4?
+evbutton4_select
+is_ex _ev_selected == 3?
+evbutton3_select
+is_ex _ev_selected == 2?
+evbutton2_select
+is_ex _ev_selected == 1?
+evbutton1_select
+endmacro
+
+// handle transitioning out of record2 scope
+macro record2_finish
+flag menu_move r2_handlemove
+flag menu_talk r2_handletalk
+flag menu_present r2_finishhandle
+flag menu_local r2_handlelocal fail=r2_handlenone
+
+label r2_handlemove
+{setup_move_menu}
+goto r2_finishhandle
+
+label r2_handletalk
+{setup_talk_menu}
+goto r2_finishhandle
+
+label r2_handlelocal
+{ANIM_LOCALMENU_STARTUP}
+{reset_buttons}
+goto r2_finishhandle
+
+// HYPER CURSED FAKE TEXT ADVANCE BUTTON
+// TODO: move this out of this macro
+label r2_handlenone
+obj fg/none z=10 name=clickmask
+obj $temp_bigbg y=192 z=1 name=fakebg
+obj $_bigbutton_comeback name=tempani y=192 z=5
+pause 15
+delete name=tempani
+// Reset real button's graphics
+set _bigbutton_bg $temp_bigbg
+{set_ui_theme $_bigbutton_theme}
+// Create fake text advance button
+joinvar pth1 general/ui $_bigbutton_theme /buttonpress
+joinvar pth2 $pth1 _high
+gui Button r2_hitbutton x=16 y=232 z=2 name=fakebigbutton graphic=$pth1 hotkey=enter_down
+obj general/arrow_big x=100 y=274 z=3 name=fakebigarrow
+// Extra fake invisible box over the arrow so it counts as a button
+gui Button r2_hitbutton x=100 y=274 z=3 name=fakefakebigarrow graphic=general/arrow_big_fake
+// Wait until one of the buttons gets pressed
+gui Wait
+// exit normally if a different button was pressed
+//{r2_maskdelay}
+goto r2_finishhandle
+label r2_hitbutton
+// Delete the fake button
+delete name=fakebigbutton
+delete name=fakebigarrow
+delete name=fakefakebigarrow
+delete name=clickmask
+// Play the text advance sound
+sfx bloop
+// Create a fake "pressed" button and display it for two frames
+obj $pth2 x=16 y=232 z=2 name=fakebigbutton
+pause 2
+delete name=fakebigbutton
+// Clear the fake background
+delete name=fakebg
+// Invisibly advance to the next text box
+"{sound none}{next}"
+// Continue execution normally
+goto r2_finishhandle
+
+label r2_finishhandle
+delete name=fakebg suppress
+endmacro
+
+// Completely flush all record-related objects
+macro flush_record
+set _bigbutton_bg $temp_bigbg
+set_ui_theme $_bigbutton_theme
+{flush_record_gfx}
+{unbind_record2}
+delete name=recordbg suppress
+delete name=record_border1 suppress
+delete name=record_border1 suppress
+delete name=record_border2 suppress
+delete name=banner suppress
+delete name=back_btn suppress
+delete name=present_btn suppress
+delete name=banner_in suppress
+delete name=grid_in suppress
+delete name=switch_btn_in suppress
+delete name=checkbtn suppress
+delete name=clickmask suppress
+endmacro
+
+// Flush most record-related objects
+// but leave things like the background, borders,
+// and back button untouched
+macro flush_record_gfx
+delete name=switch_btn suppress
+delete name=fakebg suppress
+delete name=fakebigbutton suppress
+delete name=fakebigarrow suppress
+delete name=fakefakebigarrow suppress
+delete name=grid suppress
+delete name=buttonleft suppress
+delete name=buttonright suppress
+delete name=nameplate suppress
+delete name=back_btn suppress
+{flush_record_buttons}
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+delete name=bigplate suppress
+delete name=bigplate_bg suppress
+delete name=bigplate_borders suppress
+delete name=descplate suppress
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+delete name=ev_bigicon suppress
+delete name=ev_bignameplate suppress
+delete name=ev_bigdata suppress
+delete name=ev_bigdesc suppress
+delete name=record_arrowleft_gfx suppress
+delete name=record_arrowleft_btn suppress
+delete name=record_arrowright_gfx suppress
+delete name=record_arrowright_btn suppress
+endmacro
+
+macro flush_record_buttons
+delete name=evbutton1 suppress
+delete name=evbutton2 suppress
+delete name=evbutton3 suppress
+delete name=evbutton4 suppress
+delete name=evbutton5 suppress
+delete name=evbutton6 suppress
+delete name=evbutton7 suppress
+delete name=evbutton8 suppress
+endmacro
+
+// back button handler
+macro exit_record
+sfx Cancel
+{unbind_record2}
+setflag closerecord
+endmacro
+
+// Go back a page
+macro record_pageleft
+{unbind_record2}
+sfx Select
+setflag recordpageleft
+delete name=buttonleft
+delete name=record_arrowleft_gfx suppress
+delete name=buttonright
+delete name=record_arrowright_gfx suppress
+obj general/ui/record/button_left_high x=0 y=248 z=5 name=buttonleft
+obj general/ui/record/button_right x=240 y=248 z=5 name=buttonright
+{ANIM_RECORD_PAGETURN_SETUP}
+subvar current_page 1
+is_ex current_page == 0?
+set current_page $max_pages
+{ANIM_RECORD_PAGETURN}
+{reset_record_buttons}
+
+delflag recordpageleft
+
+delete name=buttonleft
+gui Button {record_pageleft} name=buttonleft x=0 y=248 z=5 graphic=general/ui/record/button_left
+obj general/ui/record/arrow_left name=record_arrowleft_gfx x=0 y=290 z=5
+gui Button {record_pageleft} name=record_arrowleft_btn x=0 y=290 z=5 graphic=general/ui/record/arrowdummy
+
+delete name=buttonright
+gui Button {record_pageright} name=buttonright x=240 y=248 z=5 graphic=general/ui/record/button_right
+obj general/ui/record/arrow_right name=record_arrowright_gfx x=243 y=290 z=5
+gui Button {record_pageright} name=record_arrowright_btn x=243 y=290 z=5 graphic=general/ui/record/arrowdummy
+
+setflag nosound
+{evbutton1_select}
+{bind_record2}
+endmacro
+
+// Go forward a page
+macro record_pageright
+{unbind_record2}
+sfx Select
+delete name=buttonleft
+delete name=record_arrowleft_gfx suppress
+delete name=buttonright
+delete name=record_arrowright_gfx suppress
+obj general/ui/record/button_left x=0 y=248 z=5 name=buttonleft
+obj general/ui/record/button_right_high x=240 y=248 z=5 name=buttonright
+{ANIM_RECORD_PAGETURN_SETUP}
+addvar current_page 1
+is_ex current_page > max_pages?
+set current_page 1
+{ANIM_RECORD_PAGETURN}
+{reset_record_buttons}
+
+delete name=buttonleft
+gui Button {record_pageleft} name=buttonleft x=0 y=248 z=5 graphic=general/ui/record/button_left
+obj general/ui/record/arrow_left name=record_arrowleft_gfx x=0 y=290 z=5
+gui Button {record_pageleft} name=record_arrowleft_btn x=0 y=290 z=5 graphic=general/ui/record/arrowdummy
+
+delete name=buttonright
+gui Button {record_pageright} name=buttonright x=240 y=248 z=5 graphic=general/ui/record/button_right
+obj general/ui/record/arrow_right name=record_arrowright_gfx x=243 y=290 z=5
+gui Button {record_pageright} name=record_arrowright_btn x=243 y=290 z=5 graphic=general/ui/record/arrowdummy
+
+setflag nosound
+{evbutton1_select}
+{bind_record2}
+endmacro
+
+// Delete all extant item buttons
+// and remake them given current
+// state of memory. Despite the name
+// this is also used to create them in the first place
+macro reset_record_buttons
+{flush_record_buttons}
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+isempty current_page?
+set current_page 1
+{ARRAY_GET_USED $inv_selected acc1}
+is_ex acc1 <= 8?
+goto evi_layout_loop
+
+{get_count_from_page acc1}
+
+label evi_layout_loop
+isempty _ITER?
+goto evi_layout_begin
+{create_evi_button}
+
+label evi_layout_begin
+{ITERATE 1 $acc1 evi_layout_loop}
+endmacro
+
+// Get the number of filled slots on
+// the current inventory page
+macro get_count_from_page
+{ARRAY_GET_USED $inv_selected acc4}
+{get_paged_index $acc4 $max_pages acc5}
+setvar $1 $acc5
+is_ex current_page < max_pages?
+setvar $1 8
+endmacro
+
+// Creates one evidence button
+macro create_evi_button
+{get_real_index $_ITER $current_page real_idx}
+
+{get_item_img_by_idx $inv_selected $real_idx acc2}
+joinvar icnpath ev/40/ $acc2
+joinvar icnname evbutton $_ITER
+{lookup_icn_pos $_ITER}
+
+set acc2 $_ITER
+is acc2 1?
+gui Button {evbutton1_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 2?
+gui Button {evbutton2_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 3?
+gui Button {evbutton3_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 4?
+gui Button {evbutton4_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 5?
+gui Button {evbutton5_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 6?
+gui Button {evbutton6_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 7?
+gui Button {evbutton7_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+is acc2 8?
+gui Button {evbutton8_select} name=$icnname x=$_x y=$_y z=4 graphic=$icnpath
+endmacro
+
+// bind arrow key handlers
+macro bind_record2
+gui Button {r2_updownkey} name=r2_upkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_up
+gui Button {r2_updownkey} name=r2_downkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_down
+gui Button {r2_leftkey} name=r2_leftkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_left
+gui Button {r2_rightkey} name=r2_rightkey_handler graphic=code_dummy x=-2 y=-2 hotkey=k_right
+endmacro
+
+// unbind arrow key handlers
+macro unbind_record2
+delete name=r2_upkey_handler suppress
+delete name=r2_downkey_handler suppress
+delete name=r2_leftkey_handler suppress
+delete name=r2_rightkey_handler suppress
+endmacro
+
+// handle up key & down key
+// (behavior is identical)
+macro r2_updownkey
+{get_count_from_page dat1}
+setvar dat2 $_ev_selected
+is_ex dat2 < 5?
+addvar _ev_selected 4
+is_ex dat2 > 4?
+subvar _ev_selected 4
+is_ex _ev_selected > dat1?
+setvar _ev_selected $dat1
+{select_current_ev}
+endmacro
+
+// handle left key 
+macro r2_leftkey
+{get_count_from_page dat1}
+setvar dat2 $_ev_selected
+is_ex max_pages == 1?
+goto r2left_onepage
+
+subvar _ev_selected 1
+is_ex dat2 == 1?
+record_pageleft
+is_ex dat2 == 1?
+setflag nosound
+is_ex dat2 == 5?
+record_pageleft
+is_ex dat2 == 5?
+setflag nosound
+goto r2left_end
+
+label r2left_onepage
+subvar _ev_selected 1
+is_ex dat2 == 1?
+setvar _ev_selected == 4
+is_ex dat2 == 5?
+setvar _ev_selected == 8
+
+goto r2left_end
+
+label r2left_end
+is_ex _ev_selected > dat1?
+setvar _ev_selected $dat1
+{select_current_ev}
+endmacro
+
+macro r2_rightkey
+{get_count_from_page dat1}
+setvar dat2 $_ev_selected
+is_ex max_pages == 1?
+goto r2right_onepage
+
+addvar _ev_selected 1
+is_ex dat2 == dat1?
+record_pageright
+is_ex dat2 == dat1?
+setflag nosound
+is_ex dat2 == dat1?
+set _ev_selected 1
+is_ex dat2 == dat1?
+goto r2right_end
+is_ex dat2 == 4?
+record_pageright
+is_ex dat2 == 4?
+setflag nosound
+is_ex dat2 == 8?
+record_pageright
+is_ex dat2 == 8?
+setflag nosound
+goto r2right_end
+
+label r2right_onepage
+addvar _ev_selected 1
+is_ex dat2 == 4?
+setvar _ev_selected == 1
+is_ex dat2 == 8?
+setvar _ev_selected == 5
+
+goto r2right_end
+
+label r2right_end
+is_ex _ev_selected > dat1?
+set _ev_selected $dat1
+{select_current_ev}
+endmacro
+
+// select evidence 1
+macro evbutton1_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 1
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=34 y=254 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 2
+macro evbutton2_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 2
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=82 y=254 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 3
+macro evbutton3_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 3
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=130 y=254 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 4
+macro evbutton4_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 4
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=178 y=254 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 5
+macro evbutton5_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 5
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=34 y=302 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 6
+macro evbutton6_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 6
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=82 y=302 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 7
+macro evbutton7_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 7
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=130 y=302 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// select evidence 8
+macro evbutton8_select
+delete name=ev_selector suppress
+delete name=ev_nameplate suppress
+set _ev_selected 8
+noflag nosound?
+sfx Select
+delflag nosound
+{populate_currentev}
+gui Button {evbutton_confirm} x=178 y=302 name=ev_selector z=4 graphic=general/ui/record/evframe_small hotkey=enter_down
+endmacro
+
+// Open detail view for the currently
+// selected item
+macro evbutton_confirm
+sfx evidence/Ev
+showbigrecord
+{unbind_record2}
+endmacro
+
+// Populate the nameplate for the current evidence
+macro populate_currentev
+{get_real_index $_ev_selected $current_page real_idx}
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx nameplate acc1}
+joinvar nmppath ev/name/ $acc1
+obj $nmppath name=ev_nameplate x=64 y=230 z=3
+endmacro
+
+// evidence icon position lookup table
+macro lookup_icn_pos
+set idx_to_check $1
+is_ex idx_to_check < 5?
+set _y 256
+is_ex idx_to_check > 4?
+set _y 304
+is_ex idx_to_check == 1 OR idx_to_check == 5?
+set _x 36
+is_ex idx_to_check == 2 OR idx_to_check == 6?
+set _x 84
+is_ex idx_to_check == 3 OR idx_to_check == 7?
+set _x 132
+is_ex idx_to_check == 4 OR idx_to_check == 8?
+set _x 180
+endmacro
+
+// Display detail view
+macro showbigrecord
+flag bigrecord?
+goto bigrecord_nointro
+{get_real_index $_ev_selected $current_page real_idx}
+{ANIM_BIGRECORD_OPEN}
+label bigrecord_nointro
+{ARRAY_GET_USED $inv_selected mat2}
+{get_real_index $_ev_selected $current_page real_idx}
+{flush_record_gfx}
+setflag bigrecord
+obj general/ui/record/bigplate_bg x=0 y=192 name=bigplate_bg z=1
+obj general/ui/record/bigplate x=0 y=192 name=bigplate z=1
+obj general/ui/record/bigplate_borders x=0 y=192 name=bigplate_borders z=2
+obj general/ui/record/descplate x=0 y=192 name=descplate z=2
+
+is_ex mat2 == 1?
+obj general/ui/record/bigbutton_left x=0 y=232 name=buttonleft z=4
+is_ex mat2 == 1?
+obj general/ui/record/bigbutton_right x=240 y=232 name=buttonright z=4
+
+is_ex mat2 > 1?
+gui Button {bigrecord_pageleft} x=0 y=232 name=buttonleft z=4 graphic=general/ui/record/bigbutton_left hotkey=k_left
+is_ex mat2 > 1?
+gui Button {bigrecord_pageright} x=240 y=232 name=buttonright z=4 graphic=general/ui/record/bigbutton_right hotkey=k_right
+
+is_ex mat2 > 1?
+obj general/ui/record/arrow_left name=record_arrowleft_gfx x=0 y=258 z=5
+is_ex mat2 > 1?
+gui Button {bigrecord_pageleft} name=record_arrowleft_btn x=0 y=258 z=5 graphic=general/ui/record/arrowdummy
+
+is_ex mat2 > 1?
+obj general/ui/record/arrow_right name=record_arrowright_gfx x=243 y=258 z=5
+is_ex mat2 > 1?
+gui Button {bigrecord_pageright} name=record_arrowright_btn x=243 y=258 z=5 graphic=general/ui/record/arrowdummy
+
+gui Button {exit_bigrecord} name=back_btn x=0 y=352 z=6 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+{get_item_img_by_idx $inv_selected $real_idx acc2}
+joinvar icnpath ev/ $acc2
+obj $icnpath name=ev_bigicon x=21 y=232 z=2
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx nameplate acc2}
+joinvar nmppath ev/name/ $acc2
+obj $nmppath name=ev_bignameplate x=96 y=232 z=2
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx data acc2}
+joinvar datapath ev/data/ $acc2
+obj $datapath name=ev_bigdata x=92 y=248 z=2
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx desc acc2}
+joinvar descpath ev/desc/ $acc2
+obj $descpath name=ev_bigdesc x=0 y=306 z=2
+
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1
+gui Button {switch_biginventory} name=switch_btn x=201 y=192 graphic=$acc1
+{bigrecord_check_decide}
+endmacro
+
+macro bigrecord_check_decide
+setflag _check_deciding
+{get_real_index $_ev_selected $current_page real_idx}
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx check acc2}
+delete name=checkbtn suppress
+delete name=checkbtn_in suppress
+delete name=checkbtn_out suppress
+is acc2 false?
+delflag acc2
+flag _lastcheck AND acc2?
+goto handle_keepcheck
+is acc2 true?
+goto handle_newcheck
+flag _lastcheck?
+goto handle_nocheck
+goto bigrecord_check_finish
+
+label handle_keepcheck
+gui Button {bigrecord_check} name=checkbtn x=154 y=352 z=6 graphic=general/DS-PyWrightButtons/key_check hotkey=enter_down
+setflag _lastcheck
+goto bigrecord_check_finish
+
+label handle_newcheck
+obj general/DS-PyWrightButtons/key_check name=checkbtn_in x=154 y=384 z=6
+scroll name=checkbtn_in y=-32 speed=4
+delete name=checkbtn_in
+goto handle_keepcheck
+
+label handle_nocheck
+obj general/DS-PyWrightButtons/key_check name=checkbtn_out x=154 y=352 z=6
+scroll name=checkbtn_out y=32 speed=4
+delete name=checkbtn_out
+delflag _lastcheck
+
+label bigrecord_check_finish
+delflag _check_deciding
+endmacro
+
+macro bigrecord_check
+flag _page_turning skipcheck
+sfx Confirm
+{ANIM_BIGRECORD_CHECK}
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx checkscript acc2}
+checkscript $acc2
+{bigrecord_check_decide}
+label skipcheck
+endmacro
+
+
+// Detail view previous item
+macro bigrecord_pageleft
+flag _check_deciding skip_pageturn
+setflag _page_turning
+delete name=buttonleft
+delete name=record_arrowleft_gfx
+delete name=record_arrowleft_btn
+delete name=buttonright
+delete name=record_arrowright_gfx
+delete name=record_arrowright_btn
+obj general/ui/record/bigbutton_left x=0 y=232 name=buttonleft z=4
+obj general/ui/record/bigbutton_right x=240 y=232 name=buttonright z=4
+{ARRAY_GET_USED $inv_selected mat3}
+{get_paged_index $mat3 $max_pages paged_idx}
+
+sfx Blink
+subvar _ev_selected 1
+is_ex _ev_selected == 0?
+subvar current_page 1
+is_ex _ev_selected == 0?
+setvar _ev_selected 8
+is_ex current_page == 0?
+setvar _ev_selected $paged_idx
+is_ex current_page == 0?
+setvar current_page $max_pages
+setflag bigrecord_left
+{ANIM_BIGRECORD_PAGETURN}
+delflag bigrecord_left
+{flush_record_gfx}
+{showbigrecord}
+label skip_pageturn
+delflag _page_turning
+endmacro
+
+// Detail view next item
+macro bigrecord_pageright
+flag _check_deciding skip_pageturn
+setflag _page_turning
+delete name=buttonleft
+delete name=record_arrowleft_gfx
+delete name=record_arrowleft_btn
+delete name=buttonright
+delete name=record_arrowright_gfx
+delete name=record_arrowright_btn
+obj general/ui/record/bigbutton_left x=0 y=232 name=buttonleft z=4
+obj general/ui/record/bigbutton_right x=240 y=232 name=buttonright z=4
+
+sfx Blink
+addvar _ev_selected 1
+is_ex _ev_selected == 9?
+addvar current_page 1
+is_ex _ev_selected == 9?
+setvar _ev_selected 1
+{get_real_index $_ev_selected $current_page real_idx}
+{ARRAY_GET_USED $inv_selected mat2}
+is_ex real_idx > mat2?
+setvar _ev_selected 1
+is_ex real_idx > mat2?
+setvar current_page 1
+is_ex current_page > max_pages?
+setvar current_page 1
+
+{ANIM_BIGRECORD_PAGETURN}
+
+{flush_record_gfx}
+{showbigrecord}
+label skip_pageturn
+delflag _page_turning
+endmacro
+
+// Switch inventories
+// from the detail view
+macro switch_biginventory
+sfx Scroll
+{flush_record_gfx}
+{get_next_inventory dat1 $inv_selected}
+set inv_selected $dat1
+{update_max_pages}
+is_ex current_page > max_pages?
+set current_page $max_pages
+{update_current_ev}
+{showbigrecord}
+endmacro
+
+// Exit detail view
+macro exit_bigrecord
+flag _page_turning skipexit
+sfx Cancel
+delflag bigrecord
+delflag _lastcheck
+{flush_record}
+{setup_record2}
+setflag nosound
+{select_current_ev}
+label skipexit
+endmacro
+
+// Show the present menu
+// DO NOT USE FOR PROMPTS
+// Use showprompt2 for prompts
+macro showpresent2
+delflag shoutmode
+set _present_shout
+set _present_char
+set _present_fail $1
+{disable_court_record_button}
+delflag presented
+setflag presentmode
+{showrecord2}
+delflag presentmode
+{enable_court_record_button}
+delflag closerecord
+flag presented?
+goto $_selected fail=$_present_fail
+endmacro
+
+macro showprompt2
+setflag record_noback
+setflag menu_present
+{msgwindow_question $1}
+set _present_prefix $2
+set _present_fail $3
+set _present_shout $4
+set _present_char $5
+isnotempty _present_shout?
+setflag shoutmode
+{disable_court_record_button}
+delflag presented
+setflag presentmode
+{showrecord2}
+delflag presentmode
+{enable_court_record_button}
+delflag closerecord
+delflag record_noback
+delflag menu_present
+delflag shoutmode
+joinvar _present_target $_present_prefix _ $_selected
+endmacro
