@@ -2,6 +2,13 @@
 // via repeated subtraction
 // Stores results in global variables
 // Will cause lag on very large operands
+//
+// This is only useful if you want to operate on the remainder.
+// If you don't care about that, you can use the engine's float division 
+// and then discard the decimal place, like this:
+// set x 10
+// divvar x 2 // x is now "5.0"
+// absvar x // x is now 5
 macro intdiv
 // don't have to care abt signs
 // since negative numbers arent real
@@ -12,6 +19,14 @@ set _remainder
 
 // 0 divided by anything is 0
 is_ex _dividend == 0?
+goto _intdiv_loop_end
+
+// anything divided by 1 is itself
+is_ex _divisor 1?
+set _quotient $_dividend
+is_ex _divisor 1?
+set _remainder 0
+is_ex _divisor 1?
 goto _intdiv_loop_end
 
 // Special handler for divisor > dividend
