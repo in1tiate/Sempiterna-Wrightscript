@@ -250,6 +250,10 @@ setvar _present_shout takethat
 flag magatama_presented AND psycholock_active?
 setvar _present_char phoenix
 
+//Special case: badge present counter
+is _selected badge?
+increment_stat badges
+
 noflag shoutmode?
 sfx Confirm
 flag shoutmode?
@@ -1028,7 +1032,7 @@ endmacro
 // Switch inventories
 // from the detail view
 macro switch_biginventory
-sfx Scroll
+{ANIM_BIGRECORD_SWITCH}
 {flush_record_gfx}
 {get_next_inventory dat1 $inv_selected}
 set inv_selected $dat1

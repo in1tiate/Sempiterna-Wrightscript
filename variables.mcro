@@ -101,6 +101,7 @@ macro init_globals
 importvars conf.dat
 importvars ext.dat
 importvars stats.dat
+importvars ach.dat
 
 // Get default values if user has not set up any
 isempty conf_skiptext?
@@ -265,5 +266,214 @@ addvar stat_123_wanderer $stat_3_wanderer
 
 // Finally, export the stored variables to case 4's ext2.
 exportvars Turnabout_for_Eternity/ext2.dat stat_123_badges stat_123_retries stat_123_pixelhunter stat_123_afterlasts stat_123_oopsies stat_123_daredevil stat_123_wanderer
+endmacro
 
+// increment a stat
+// do NOT run from the main menu
+macro increment_stat
+
+joinvar stat_to_increment stat_ $__case_number _ $1
+addvar $stat_to_increment 1
+
+is __case_number 0?
+// don't export
+is __case_number 1?
+exportvars stats.dat stat_1_badges stat_1_retries stat_1_pixelhunter stat_1_afterlasts stat_1_oopsies stat_1_daredevil stat_1_wanderer
+is __case_number 2?
+exportvars stats.dat stat_2_badges stat_2_retries stat_2_pixelhunter stat_2_afterlasts stat_2_oopsies stat_2_daredevil stat_2_wanderer
+is __case_number 3?
+exportvars stats.dat stat_3_badges stat_3_retries stat_3_pixelhunter stat_3_afterlasts stat_3_oopsies stat_3_daredevil stat_3_wanderer
+is __case_number 4?
+exportvars stats.dat stat_4_badges stat_4_retries stat_4_pixelhunter stat_4_afterlasts stat_4_oopsies stat_4_daredevil stat_4_wanderer
+
+// check whether we need to give an accolade for this
+setvar _accstat $1
+getvar _accstatval $stat_to_increment
+goto $_accstat fail=finishstat
+
+label badges
+is_ex _accstatval == 1?
+give_accolade badge1
+is_ex _accstatval == 10?
+give_accolade badge10
+is_ex _accstatval == 20?
+give_accolade badge20
+goto finishstat
+
+label finishstat
+endmacro
+
+
+macro export_achievements_storage
+// One tracker is global, one is used for cases
+
+// No Stopping Here
+setvar accolade_episode1 0
+setvar master_accolade_episode1 0
+// No Sleep Tonight
+setvar accolade_episode2 0
+setvar master_accolade_episode2 0
+// No Going Back
+setvar accolade_episode3 0
+setvar master_accolade_episode3 0
+// Enough For Today
+setvar accolade_episode4 0
+setvar master_accolade_episode4 0
+
+// 623XX
+setvar accolade_penalties 0
+setvar master_accolade_penalties 0
+
+// Novice Solicitor
+setvar accolade_badge1 0
+setvar master_accolade_badge1 0
+// Seasoned Solicitor
+setvar accolade_badge10 0
+setvar master_accolade_badge10 0
+// Expert Solicitor
+setvar accolade_badge20 0
+setvar master_accolade_badge20 0
+
+// Whippity-Whip Trip
+setvar accolade_franzy 0
+setvar master_accolade_franzy 0
+
+// Hold That Thought
+setvar accolade_psycho_backout 0
+setvar master_accolade_psycho_backout 0
+
+// unused except for convenient pasting
+setvar all_ach_list accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+
+exportvars ach.dat master_accolade_episode1 master_accolade_episode2 master_accolade_episode3 master_accolade_episode4 master_accolade_penalties master_accolade_badge1 master_accolade_badge10 master_accolade_badge20 master_accolade_franzy master_accolade_psycho_backout
+
+exportvars Turnabout_Buyback/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+exportvars Turnabout_Backraise/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+exportvars Turnabout_Snake-Eyes/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+exportvars Turnabout_For_Eternity/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+
+// debug
+exportvars A_Debug_Turnabout/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+endmacro
+
+macro sync_achievements
+// Syncs achievements from all cases to the root game
+// Since you can have an achievement in one case but not another,
+// we import them one by one and check that way.
+// Intensive, so only run at the accolade viewer screen
+setvar ach_sync_index 1
+importvars ach.dat
+
+importvars Turnabout_Buyback/ach.dat
+goto ach_sync_check
+
+label ach_sync_2
+importvars Turnabout_Backraise/ach.dat
+goto ach_sync_check
+
+label ach_sync_3
+importvars Turnabout_Snake-Eyes/ach.dat
+goto ach_sync_check
+
+label ach_sync_4
+importvars Turnabout_For_Eternity/ach.dat
+goto ach_sync_check
+
+label ach_sync_0
+importvars A_Debug_Turnabout/ach.dat
+goto ach_sync_check
+
+label ach_sync_check
+// No Stopping Here
+is_ex accolade_episode1 == 1 OR master_accolade_episode1 == 1?
+setvar master_accolade_episode1 1
+// No Sleep Tonight
+is_ex accolade_episode2 == 1 OR master_accolade_episode2 == 1?
+setvar master_accolade_episode2 1
+// No Going Back
+is_ex accolade_episode3 == 1 OR master_accolade_episode3 == 1?
+setvar master_accolade_episode3 1
+// Enough For Today
+is_ex accolade_episode4 == 1 OR master_accolade_episode4 == 1?
+setvar master_accolade_episode4 1
+
+// 623XX
+is_ex accolade_penalties == 1 OR master_accolade_penalties == 1?
+setvar master_accolade_penalties 1
+
+// Novice Solicitor
+is_ex accolade_badge1 == 1 OR master_accolade_badge1 == 1?
+setvar master_accolade_badge1 1
+// Seasoned Solicitor
+is_ex accolade_badge10 == 1 OR master_accolade_badge10 == 1?
+setvar master_accolade_badge10 1
+// Expert Solicitor
+is_ex accolade_badge20 == 1 OR master_accolade_badge20 == 1?
+setvar master_accolade_badge20 1
+
+// Whippity-Whip Trip
+is_ex accolade_franzy == 1 OR master_accolade_franzy == 1?
+setvar master_accolade_franzy 1
+
+// Hold That Thought
+is_ex accolade_psycho_backout == 1 OR master_accolade_psycho_backout == 1?
+setvar master_accolade_psycho_backout 1
+
+addvar ach_sync_index 1
+is_ex ach_sync_index < 5?
+joinvar ach_sync_label ach_sync_ $ach_sync_index
+is_ex ach_sync_index > 4?
+setvar ach_sync_label ach_sync_0
+is_ex ach_sync_index > 5?
+goto export_finish
+
+goto $ach_sync_label
+
+label export_finish
+// No Stopping Here
+setvar accolade_episode1 $master_accolade_episode1
+// No Sleep Tonight
+setvar accolade_episode2 $master_accolade_episode2
+// No Going Back
+setvar accolade_episode3 $master_accolade_episode3
+// Enough For Today
+setvar accolade_episode4 $master_accolade_episode4
+
+// 623XX
+setvar accolade_penalties $master_accolade_penalties
+// Novice Solicitor
+setvar accolade_badge1 $master_accolade_badge1
+// Seasoned Solicitor
+setvar accolade_badge10 $master_accolade_badge10
+// Expert Solicitor
+setvar accolade_badge20 $master_accolade_badge20
+
+// Whippity-Whip Trip
+setvar accolade_franzy $master_accolade_franzy
+
+// Hold That Thought
+setvar accolade_psycho_backout $master_accolade_psycho_backout
+
+exportvars ach.dat master_accolade_episode1 master_accolade_episode2 master_accolade_episode3 master_accolade_episode4 master_accolade_penalties master_accolade_badge1 master_accolade_badge10 master_accolade_badge20 master_accolade_franzy master_accolade_psycho_backout
+
+exportvars Turnabout_Buyback/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+exportvars Turnabout_Backraise/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+exportvars Turnabout_Snake-Eyes/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+exportvars Turnabout_For_Eternity/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+
+// debug
+exportvars A_Debug_Turnabout/ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+
+endmacro
+
+macro set_accolade
+importvars ach.dat
+setvar $1 1
+exportvars ach.dat accolade_episode1 accolade_episode2 accolade_episode3 accolade_episode4 accolade_penalties accolade_badge1 accolade_badge10 accolade_badge20 accolade_franzy accolade_psycho_backout
+endmacro
+
+macro set_accolade_master
+importvars ach.dat
+setvar $1 1
+exportvars ach.dat master_accolade_episode1 master_accolade_episode2 master_accolade_episode3 master_accolade_episode4 master_accolade_penalties master_accolade_badge1 master_accolade_badge10 master_accolade_badge20 master_accolade_franzy master_accolade_psycho_backout
 endmacro

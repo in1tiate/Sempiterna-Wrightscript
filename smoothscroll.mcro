@@ -330,4 +330,15 @@ char $2 e=$3
 goto side_end
 
 label side_end
+flag msgwindow?
+goto handle_window
+goto skip_window
+
+// Re-display the message window if we need to
+label handle_window
+isnotempty _var_nt?
+nti $_var_nt
+isempty _var_nt?
+nti_clear
+label skip_window
 endmacro

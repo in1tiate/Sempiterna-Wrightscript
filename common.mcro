@@ -72,20 +72,38 @@ macro give_accolade
 setvar accolade_id $1
 joinvar accolade_path ev/40/ $1
 joinvar accolade_namepath general/accolades/ $1
-joinvar accolade_id acc_ $accolade_id
-setflag $accolade_id
+joinvar accolade_id accolade_ $accolade_id
+setvar accolade_master $2
+is_ex $accolade_id == 1 skip_accolade
+isempty accolade_master?
+set_accolade $accolade_id
+isnotempty accolade_master?
+joinvar accolade_id master_ $accolade_id
+isnotempty accolade_master?
+is_ex $accolade_id == 1 skip_accolade
+isnotempty accolade_master?
+set_accolade_master $accolade_id
+
 obj general/accolades/accolade_anim x=256 y=0 z=8 name=accolade_anim
 obj $accolade_path x=258 y=2 z=7 name=accolade_icon
 obj $accolade_namepath x=301 y=20 z=8 name=accolade_name
 sfx accolade
 scroll name=accolade_icon x=-145 speed=10 nowait
 scroll name=accolade_name x=-145 speed=10 nowait
-scroll name=accolade_anim x=-145 speed=10
-pause 120
+scroll name=accolade_anim x=-145 speed=10 nowait
+timer 120 give_accolade_2
+
+label skip_accolade
+endmacro
+
+macro give_accolade_2
 scroll name=accolade_icon x=145 speed=10 nowait
 scroll name=accolade_name x=145 speed=10 nowait
-scroll name=accolade_anim x=145 speed=10
-pause 1
+scroll name=accolade_anim x=145 speed=10 nowait
+timer 16 give_accolade_3
+endmacro
+
+macro give_accolade_3
 delete name=accolade_icon
 delete name=accolade_name
 delete name=accolade_anim

@@ -849,3 +849,47 @@ endmacro
 macro ANIM_BIGRECORD_CHECK_CLOSE
 bigrecord_check_decide
 endmacro
+
+macro ANIM_BIGRECORD_SWITCH
+sfx Scroll
+{flush_record_gfx}
+delete name=banner_in suppress
+joinvar dat4 $temp_bigbg2 lines
+obj $dat4 name=recordbg_in y=192 z=-1
+{get_next_inventory dat1 $inv_selected}
+joinvar switch1 general/ui/record/ $dat1 _high_scrolloff
+joinvar banner1_path general/ui/record/banner_ $inv_selected
+joinvar banner2_path general/ui/record/banner_ $dat1
+{get_next_inventory dat1 $dat1}
+joinvar switch2 general/ui/record/ $dat1 _scrollon
+delete name=switch_btn suppress
+obj $switch1 name=switch_btn_in x=201 y=192 z=6
+delete name=banner suppress
+obj $banner1_path name=banner_in x=0 y=202 z=0
+delete name=ev_nameplate
+delete name=buttonleft
+delete name=buttonright
+delete name=record_arrowleft_btn suppress
+delete name=record_arrowleft_gfx suppress
+delete name=record_arrowright_btn suppress
+delete name=record_arrowright_gfx suppress
+obj general/ui/record/bigbutton_left x=0 y=232 name=buttonleft z=4
+obj general/ui/record/bigbutton_right x=240 y=232 name=buttonright z=4
+scroll name=banner_in y=-22 speed=4 nowait
+obj general/ui/record/bigplate_switch x=0 y=192 z=0 name=bigplate_in z=1
+obj general/ui/record/bigplate_borders x=0 y=192 name=bigplate_borders z=2
+obj general/ui/record/descplate x=0 y=192 name=descplate z=2
+pause 10
+delete name=banner_in
+delete name=switch_btn_in
+obj $switch2 name=switch_btn_in x=201 y=192 z=6
+obj $banner2_path name=banner_in x=0 y=180 z=0
+pause 4
+scroll name=banner_in y=22 speed=4 nowait
+pause 5
+delete name=recordbg_in suppress
+delete name=bigplate_in suppress
+delete name=bigplate_borders suppress
+delete name=descplate
+delete name=switch_btn_in suppress
+endmacro
