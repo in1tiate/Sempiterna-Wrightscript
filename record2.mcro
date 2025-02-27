@@ -93,6 +93,12 @@ flag presentmode?
 obj general/ui/record_scrolloff name=record_scrolloff x=154 y=192 z=6
 noflag presentmode?
 obj general/ui/record_high_scrolloff name=record_scrolloff x=154 y=192 z=6
+
+// Change Back to Stop if we're doing a lock prompt
+set back_btn_path general/DS-PyWrightButtons/key_borderless_back
+flag prompt_locks?
+set back_btn_path general/DS-PyWrightButtons/key_borderless_stop
+
 flag menu_move r2_startfade
 flag menu_talk r2_startfade
 flag menu_present r2_startpresent
@@ -171,6 +177,8 @@ is inv_selected evidence?
 set max_pages $ev_pages
 is inv_selected profiles?
 set max_pages $pr_pages
+is inv_selected spells?
+set max_pages $sp_pages
 endmacro
 
 
@@ -209,28 +217,45 @@ gui Button {record_pageright} name=record_arrowright_btn x=243 y=290 z=5 graphic
 
 // Draw the record UI according to mode flags
 obj general/ui/record/nameplate name=nameplate x=25 y=228 z=0
+
 noflag presentmode?
 obj general/ui/record/borders_record_top name=record_border1 x=0 y=192 z=5
+
 flag presentmode?
 obj general/ui/record/borders_present_top name=record_border1 x=0 y=192 z=5
+
 isnotempty force_inventory?
 delete name=record_border1
 isnotempty force_inventory?
 obj general/ui/record/borders_presentforce_top name=record_border1 x=0 y=192 z=5
+
 noflag record_noback?
 obj general/ui/record/borders_record_bot name=record_border2 x=0 y=352 z=5
+
 flag record_noback?
 obj general/ui/record/borders_noback_bot name=record_border2 x=0 y=352 z=5
+
+
 joinvar acc1 general/ui/record/banner_ $inv_selected
 obj $acc1 name=banner x=0 y=202 z=0
+
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1
+
 isempty force_inventory?
-gui Button {switch_inventory} name=switch_btn x=201 y=192 graphic=$acc1 hotkey=k_tab
+gui Button {switch_inventory} name=switch_btn x=179 y=192 graphic=$acc1 hotkey=k_tab
+
 flag presentmode?
 gui Button {do_present} name=present_btn x=73 y=192 graphic=general/DS-PyWrightButtons/key_present2 hotkey=k_x
+
+// Change Back to Stop if we're doing a lock prompt
+set back_btn_path general/DS-PyWrightButtons/key_borderless_back
+flag prompt_locks?
+set back_btn_path general/DS-PyWrightButtons/key_borderless_stop
+
 noflag record_noback?
-gui Button {exit_record} name=back_btn x=0 y=352 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+gui Button {exit_record} name=back_btn x=0 y=352 graphic=$back_btn_path hotkey=k_space
+
 // draw evidence icons, name graphic, etc
 {reset_record_buttons}
 endmacro
@@ -307,7 +332,15 @@ macro get_next_inventory
 set inv_to_check $2
 is inv_to_check evidence?
 set $1 profiles
+
+// No spells
+//is inv_to_check profiles?
+//set $1 evidence
+
+// Spells
 is inv_to_check profiles?
+set $1 spells
+is inv_to_check spells?
 set $1 evidence
 endmacro
 
@@ -906,7 +939,7 @@ obj $descpath name=ev_bigdesc x=0 y=306 z=2
 
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1
-gui Button {switch_biginventory} name=switch_btn x=201 y=192 graphic=$acc1
+gui Button {switch_biginventory} name=switch_btn x=179 y=192 graphic=$acc1 hotkey=k_tab
 {bigrecord_check_decide}
 endmacro
 
@@ -953,6 +986,7 @@ flag _page_turning skipcheck
 sfx Confirm
 {ANIM_BIGRECORD_CHECK}
 {ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx checkscript acc2}
+{ARRAY_GET_ITEM_BY_IDX $inv_selected $real_idx _last_checked}
 checkscript $acc2
 {bigrecord_check_decide}
 label skipcheck
@@ -1045,11 +1079,12 @@ endmacro
 
 // Exit detail view
 macro exit_bigrecord
+// Don't exit if we're turning a page - prevents nasty bugs
 flag _page_turning skipexit
 sfx Cancel
 delflag bigrecord
 delflag _lastcheck
-{flush_record}
+{ANIM_BIGRECORD_CLOSE}
 {setup_record2}
 setflag nosound
 {select_current_ev}
@@ -1076,6 +1111,7 @@ goto $_selected fail=$_present_fail
 endmacro
 
 macro showprompt2
+noflag prompt_locks?
 setflag record_noback
 setflag menu_present
 {msgwindow_question $1}
@@ -1096,4 +1132,5 @@ delflag record_noback
 delflag menu_present
 delflag shoutmode
 joinvar _present_target $_present_prefix _ $_selected
+delflag prompt_locks
 endmacro

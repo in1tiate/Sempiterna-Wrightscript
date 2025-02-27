@@ -6,14 +6,14 @@ macro initialize_inventories
 // Surely six pages is enough.
 ARRAY_CREATE evidence 48
 ARRAY_CREATE profiles 48
-//ARRAY_CREATE spells 48
+ARRAY_CREATE spells 48
 {update_inventory_pages}
 endmacro
 
 macro update_inventory_pages
 set ev_pages 1
 set pr_pages 1
-//set sp_pages 1
+set sp_pages 1
 
 {ARRAY_GET_USED evidence i_mat2}
 
@@ -41,18 +41,18 @@ set pr_pages 5
 is_ex i_mat2 > 40?
 set pr_pages 6
 
-//{ARRAY_GET_USED spells i_mat2}
-//
-//is_ex i_mat2 > 8?
-//set sp_pages 2
-//is_ex i_mat2 > 16?
-//set sp_pages 3
-//is_ex i_mat2 > 24?
-//set sp_pages 4
-//is_ex i_mat2 > 32?
-//set sp_pages 5
-//is_ex i_mat2 > 40?
-//set sp_pages 6
+{ARRAY_GET_USED spells i_mat2}
+
+is_ex i_mat2 > 8?
+set sp_pages 2
+is_ex i_mat2 > 16?
+set sp_pages 3
+is_ex i_mat2 > 24?
+set sp_pages 4
+is_ex i_mat2 > 32?
+set sp_pages 5
+is_ex i_mat2 > 40?
+set sp_pages 6
 
 set i_mat2 
 endmacro

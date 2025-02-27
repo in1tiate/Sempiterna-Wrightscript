@@ -37,7 +37,9 @@ goto _intdiv_loop_end
 
 // dividing by 0 would cause an infinite loop
 is_ex _divisor == 0?
-"{spd0}{c900}FATAL: DIVIDE BY ZERO{n}SAVE GAME AND CONTACT DEV!"
+set _err Fatal error: Call to intdiv $_dividend $_divisor would result in undefined behavior: Divide by zero
+is_ex _divisor == 0?
+THROW_ERROR
 is_ex _divisor == 0?
 goto _intdiv_loop_end
 

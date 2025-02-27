@@ -1,3 +1,17 @@
+# Speeds up setting up evidence
+# Usage:
+# init_evidence <id>
+macro init_evidence
+{ITEM_SET_PROP $1 img $1}
+set acc1 Default Name
+{ITEM_SET_PROP_FROM_VAR $1 name acc1}
+{ITEM_SET_PROP $1 nameplate $1}
+{ITEM_SET_PROP $1 desc $1}
+{ITEM_SET_PROP $1 data $1}
+{ITEM_SET_PROP $1 check false}
+{ITEM_SET_PROP $1 checkscript check_default}
+endmacro
+
 #@ Adds an evidence to the court record and shows an animation to the player about that evidence.
 #$_ev - evidence id to reveal and add to court record
 #$_name - the name of the evidence to show to the player

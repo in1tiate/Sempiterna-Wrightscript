@@ -1,0 +1,149 @@
+macro checkscript
+set _checkmacro $1
+obj bg/black name=fadeobj z=12 y=192
+fade name=fadeobj in speed=10
+flush_record
+$_checkmacro
+delflag checkdone
+
+setup_record2
+setflag nosound
+select_current_ev
+showbigrecord
+fade name=fadeobj out speed=10
+delete name=fadeobj
+delete name=check_backbtn
+endmacro
+
+macro checkscript_back
+sfx Cancel
+endmacro
+
+macro ch_start
+sfx Confirm
+delflag ch_flip
+is_ex _examine_clicky > 96?
+setflag ch_flip
+set _x $_examine_clickx
+subvar _x 5
+set _y $_examine_clicky
+addvar _y 192
+subvar _y 5
+obj general/ui/ch_cursor x=$_x y=$_y z=2 name=ch_cursor
+endmacro
+
+macro chtalk
+set _font_block igiari-cyrillic.ttf
+set _font_block_size 16
+
+set _ch_dia_y 337
+flag ch_flip?
+set _ch_dia_y 193
+set _chtalk_chr $1
+set _chtalk_icn $2
+{ch_nti $1}
+isnotempty _chtalk_icn?
+ch_ev $1 $2
+
+isempty _chtalk_color?
+set _chtalk_color $color_w
+
+textblock 6 $_ch_dia_y 240 192 color=$_chtalk_color name=ch_dia1 $_chtalk_msg1
+addvar _ch_dia_y 14
+textblock 6 $_ch_dia_y 240 192 color=$_chtalk_color name=ch_dia2 $_chtalk_msg2
+addvar _ch_dia_y 14
+textblock 6 $_ch_dia_y 240 192 color=$_chtalk_color name=ch_dia3 $_chtalk_msg3
+
+isnotempty _chtalk_sfx?
+sfx $_chtalk_sfx
+
+set _chtalk_sfx
+set _chtalk_color
+{checkscript_wait}
+endmacro
+
+macro checkscript_wait
+noflag ch_flip?
+obj general/ui-pointer name=ch_adv_arrow x=240 y=363 z=10
+flag ch_flip?
+obj general/ui-pointer name=ch_adv_arrow x=240 y=220 z=10
+gui Button {checkscript_advance} x=0 y=192 z=11 name=check_adv graphic=fs_dummy hotkey=enter_down
+gui Wait
+endmacro
+
+macro checkscript_advance
+sfx bloop
+delete name=ch_adv_arrow
+delete name=check_adv
+delete name=ch_dia1 suppress
+delete name=ch_dia2 suppress
+delete name=ch_dia3 suppress
+{ch_msg_out}
+endmacro
+
+macro ch_ev
+joinvar _ch_ev dia/ $1 $2
+delete name=ev suppress
+delete name=ev_frame suppress
+noflag ch_flip?
+ev frame x=171 y=203 name=ev_frame
+noflag ch_flip?
+ev $_ch_ev x=174 y=206 name=ev
+flag ch_flip?
+ev frame x=171 y=303 name=ev_frame
+flag ch_flip?
+ev $_ch_ev x=174 y=306 name=ev
+endmacro
+
+macro ch_ev_hide
+delete name=ev suppress
+delete name=ev_frame suppress
+endmacro
+
+macro ch_msg_in
+delete name=ch_msg suppress
+noflag ch_flip?
+obj general/ui/ch_msgwindow_down-in name=ch_msg y=335 z=3
+flag ch_flip?
+obj general/ui/ch_msgwindow_up-in name=ch_msg y=192 z=3
+pause 11
+{ch_msg_show}
+endmacro
+
+macro ch_msg_out
+delete name=ch_nametag suppress
+delete name=ch_msg suppress
+noflag ch_flip?
+obj general/ui/ch_msgwindow_down-away name=ch_msg y=335 z=3
+flag ch_flip?
+obj general/ui/ch_msgwindow_up-away name=ch_msg y=192 z=3
+pause 11
+delete name=ch_msg
+endmacro
+
+macro ch_msg_show
+delete name=ch_msg suppress
+noflag ch_flip?
+obj general/ui/ch_msgwindow_down name=ch_msg y=335 z=3
+flag ch_flip?
+obj general/ui/ch_msgwindow_up name=ch_msg y=192 z=3
+endmacro
+
+macro ch_msg_hide
+delete name=ch_msg suppress
+delete name=ch_nametag suppress
+delete name=ch_cursor
+endmacro
+
+macro ch_nti
+delete name=ch_nametag suppress
+{ch_msg_in}
+noflag ch_flip?
+obj general/nametag/$1 y=323 name=ch_nametag z=3
+flag ch_flip?
+obj general/nametag/v/$1 y=238 name=ch_nametag z=3
+endmacro
+
+macro ch_nti_clear
+{ch_nti none}
+endmacro

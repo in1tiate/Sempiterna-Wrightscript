@@ -77,7 +77,9 @@ joinvar __ARY_USED $__ARY_NAME USED
 getvar L_ARY_USED $__ARY_USED
 
 is_ex L_ARY_USED >= L_ARY_SIZE?
-"{spd0}{c900}FATAL: TRIED APPEND TO FULL LIST{n}{$__ARY_NAME}{n}SAVE GAME AND CONTACT DEV!"
+set _err Fatal error: Tried to append item ( $2 ) to array ( $1 ) but array was full!
+is_ex L_ARY_USED >= L_ARY_SIZE?
+THROW_ERROR
 
 addvar L_ARY_USED 1
 addvar $__ARY_USED 1
@@ -120,7 +122,10 @@ endmacro
 macro ARRAY_INSERT
 
 is_ex L_ARY_USED >= L_ARY_SIZE?
-"{spd0}{c900}FATAL: TRIED INSERT INTO FULL LIST{n}OPERAND: {$__ARY_NAME}{n}SAVE GAME AND CONTACT DEV!"
+set _err Fatal error: Tried to insert item ( $2 ) into array ( $1 ) but array was full!
+is_ex L_ARY_USED >= L_ARY_SIZE?
+THROW_ERROR
+
 joinvar __ARY_NAME ARRAY_ $1 _
 set __ARY_CAP $L_ARY_USED
 addvar __ARY_CAP 1
@@ -158,7 +163,8 @@ isempty _ITER?
 goto ary_iterator_first
 
 {ARRAY_GET_ITEM_BY_IDX $1 $_ITER _ITM}
-is _ITM $2?
+set _ITM_CHECK $2
+is_ex _ITM == _ITM_CHECK?
 goto ary_itm_found
 
 label ary_iterator_first

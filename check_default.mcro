@@ -1,0 +1,5 @@
+macro check_default
+set _err Attempted to check evidence with no checkscript set ( $_last_checked )
+set _err_long
+THROW_ERROR
+endmacro

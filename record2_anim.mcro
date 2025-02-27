@@ -127,12 +127,12 @@ obj $acc1 name=banner_in x=0 y=180 z=0
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1 _scrollon
 isempty force_inventory?
-obj $acc1 name=switch_btn_in x=201 y=192 z=6
+obj $acc1 name=switch_btn_in x=179 y=192 z=6
 // display present/back according to flags
 flag presentmode?
 obj general/ui/record/present_scrollon name=present_btn_in x=73 y=192 z=6
 noflag record_noback?
-obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=384 z=6
+obj $back_btn_path name=back_btn_in x=0 y=384 z=6
 
 // scroll the ui in
 noflag record_noback?
@@ -194,7 +194,7 @@ obj $acc1 name=banner_in x=0 y=202 z=0
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1 _scrolloff
 isempty force_inventory?
-obj $acc1 name=switch_btn_in x=201 y=192 z=6
+obj $acc1 name=switch_btn_in x=179 y=192 z=6
 
 // logic for figuring out which button should get highlighted
 flag presented?
@@ -208,12 +208,13 @@ flag presented back_present fail=back_nopresent
 
 label back_present
 noflag record_noback?
-obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=352 z=6
+obj $back_btn_path name=back_btn_in x=0 y=352 z=6
 goto end_anim_record_close
 
 label back_nopresent
+joinvar backhigh_path $back_btn_path _high
 noflag record_noback?
-obj general/DS-PyWrightButtons/key_borderless_back_high name=back_btn_in x=0 y=352 z=6
+obj $backhigh_path name=back_btn_in x=0 y=352 z=6
 goto end_anim_record_close
 
 // Logic converges here
@@ -265,7 +266,7 @@ joinvar banner2_path general/ui/record/banner_ $dat1
 {get_next_inventory dat1 $dat1}
 joinvar switch2 general/ui/record/ $dat1 _scrollon
 delete name=switch_btn suppress
-obj $switch1 name=switch_btn_in x=201 y=192 z=6
+obj $switch1 name=switch_btn_in x=179 y=192 z=6
 delete name=banner suppress
 obj $banner1_path name=banner_in x=0 y=202 z=0
 delete name=ev_nameplate
@@ -292,7 +293,7 @@ obj general/ui/record/grid_out x=0 y=192 z=0 name=grid_in
 pause 10
 delete name=banner_in
 delete name=switch_btn_in
-obj $switch2 name=switch_btn_in x=201 y=192 z=6
+obj $switch2 name=switch_btn_in x=179 y=192 z=6
 delete name=grid_in
 obj general/ui/record/grid_in x=0 y=192 z=0 name=grid_in
 obj $banner2_path name=banner_in x=0 y=180 z=0
@@ -555,7 +556,7 @@ obj general/DS-PyWrightButtons/key_present2_high name=present_btn_noflush x=73 y
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1
 isempty force_inventory?
-obj $acc1 name=switch_btn_noflush x=201 y=192 z=6
+obj $acc1 name=switch_btn_noflush x=179 y=192 z=6
 
 delete name=grid
 obj general/ui/record/grid_out x=0 y=192 z=-1 name=grid_in
@@ -637,7 +638,7 @@ obj $acc1 name=banner_in x=0 y=202 z=0
 
 
 noflag record_noback?
-obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=352 z=6
+obj $back_btn_path name=back_btn_in x=0 y=352 z=6
 
 pause 10
 
@@ -648,7 +649,7 @@ delete name=switch_btn_noflush
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1 _scrolloff
 isempty force_inventory?
-obj $acc1 name=switch_btn_in x=201 y=192 z=6
+obj $acc1 name=switch_btn_in x=179 y=192 z=6
 
 noflag record_noback?
 scroll name=back_btn_in y=32 speed=4 nowait
@@ -683,7 +684,7 @@ obj general/DS-PyWrightButtons/key_present2_high name=present_btn_noflush x=73 y
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1
 isempty force_inventory?
-obj $acc1 name=switch_btn_noflush x=201 y=192 z=6
+obj $acc1 name=switch_btn_noflush x=179 y=192 z=6
 
 delete name=buttonleft
 delete name=buttonright
@@ -779,7 +780,7 @@ delete name=switch_btn_noflush
 {get_next_inventory dat1 $inv_selected}
 joinvar acc1 general/ui/record/ $dat1 _scrolloff
 isempty force_inventory?
-obj $acc1 name=switch_btn_in x=201 y=192 z=6
+obj $acc1 name=switch_btn_in x=179 y=192 z=6
 
 noflag record_noback?
 scroll name=back_btn_in y=32 speed=4 nowait
@@ -863,9 +864,10 @@ joinvar banner2_path general/ui/record/banner_ $dat1
 {get_next_inventory dat1 $dat1}
 joinvar switch2 general/ui/record/ $dat1 _scrollon
 delete name=switch_btn suppress
-obj $switch1 name=switch_btn_in x=201 y=192 z=6
+obj $switch1 name=switch_btn_in x=179 y=192 z=6
 delete name=banner suppress
 obj $banner1_path name=banner_in x=0 y=202 z=0
+obj general/DS-PyWrightButtons/key_borderless_back name=back_btn x=0 y=352 z=10
 delete name=ev_nameplate
 delete name=buttonleft
 delete name=buttonright
@@ -882,7 +884,7 @@ obj general/ui/record/descplate x=0 y=192 name=descplate z=2
 pause 10
 delete name=banner_in
 delete name=switch_btn_in
-obj $switch2 name=switch_btn_in x=201 y=192 z=6
+obj $switch2 name=switch_btn_in x=179 y=192 z=6
 obj $banner2_path name=banner_in x=0 y=180 z=0
 pause 4
 scroll name=banner_in y=22 speed=4 nowait
@@ -892,4 +894,83 @@ delete name=bigplate_in suppress
 delete name=bigplate_borders suppress
 delete name=descplate
 delete name=switch_btn_in suppress
+endmacro
+
+// BIGRECORD CLOSE
+macro ANIM_BIGRECORD_CLOSE
+{flush_record_gfx}
+delete name=checkbtn suppress
+obj general/DS-PyWrightButtons/key_borderless_back_high name=back_btn x=0 y=352 z=10
+obj general/ui/record/grid name=grid x=24 y=248 z=0
+obj general/ui/record/bigplate_bg x=0 y=192 name=bigplate_bg z=3
+obj general/ui/record/bigplate x=0 y=192 name=bigplate z=3
+obj general/ui/record/evframe_big x=19 y=230 name=evframe_big z=3
+obj general/ui/record/bigplate_borders x=0 y=192 name=bigplate_borders z=4
+obj general/ui/record/descplate x=0 y=192 name=descplate z=2
+
+obj general/ui/record/bigbutton_left x=0 y=232 name=buttonleft z=6
+obj general/ui/record/bigbutton_right x=240 y=232 name=buttonright z=6
+
+obj general/ui/record/blankbrown name=ev_bigicon x=21 y=232 z=5
+
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1
+isempty force_inventory?
+obj $acc1 name=switch_btn_in x=179 y=192 z=6
+
+{ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx nameplate acc2}
+joinvar nmppath ev/name/ $acc2
+obj $nmppath name=ev_bignameplate x=96 y=232 z=6
+
+ANIM_FAKEBUTTONS_POPULATE
+scroll name=descplate y=-50 speed=10
+delete name=descplate
+delete name=bigplate
+
+scroll name=ev_bignameplate x=32 speed=32 nowait
+obj general/ui/record/nameplate_shrink x=89 y=230 name=nameplate z=5
+
+scroll name=bigplate_bg x=256 speed=36 nowait
+scroll name=evframe_big x=256 speed=36 nowait
+scroll name=ev_bigicon x=256 speed=36 nowait
+scroll name=nameplate y=-2 speed=1 nowait
+scroll name=ev_bignameplate y=-2 speed=1 nowait
+scroll name=nameplate x=-64 speed=8 nowait
+scroll name=ev_bignameplate x=-64 speed=8 nowait
+scroll name=bigplate_borders x=256 speed=36 nowait
+pause 8
+delete name=evframe_big
+delete name=ev_bigicon
+{flush_record}
+endmacro
+
+// This is a copy of reset_record_buttons from the main file.
+// The only difference is that these icons are not buttons
+// and some sanity checks are removed for efficiency
+macro ANIM_FAKEBUTTONS_POPULATE
+{ARRAY_GET_USED $inv_selected acc4}
+is_ex acc4 <= 8?
+goto evi_layout_loop
+
+{get_count_from_page acc4}
+
+label evi_layout_loop
+isempty _ITER?
+goto evi_layout_begin
+{ANIM_FAKEBUTTON_CREATE}
+
+label evi_layout_begin
+{ITERATE 1 $acc4 evi_layout_loop}
+endmacro
+
+// Creates one FAKE evidence button
+macro ANIM_FAKEBUTTON_CREATE
+{get_real_index $_ITER $current_page real_idx}
+
+{get_item_img_by_idx $inv_selected $real_idx acc5}
+joinvar icnpath ev/40/ $acc5
+joinvar icnname evbutton $_ITER
+{lookup_icn_pos $_ITER}
+
+obj $icnpath name=$icnname x=$_x y=$_y z=0
 endmacro
