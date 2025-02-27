@@ -34,7 +34,7 @@ joinvar __ITM_PROP $__ITM_PROP $2
 getvar $3 $__ITM_PROP
 endmacro
 
-//////// ITEMS ////////
+//////// ARRAYS ////////
 // make lists of your things
 // Arrays are ordered lists of references to items
 // Supports append/insert/delete
