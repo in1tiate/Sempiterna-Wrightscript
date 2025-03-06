@@ -1,4 +1,6 @@
 macro check_default
+delete name=topscreenmask
+delete name=darkenfg
 set _err Attempted to check evidence with no checkscript set ( $_last_checked )
 set _err_long
 THROW_ERROR

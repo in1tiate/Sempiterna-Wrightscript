@@ -413,8 +413,41 @@ delete name=talkbg
 label _finish_talk
 {ANIM_LOCALMENU_TALK_MARKS}
 gui Button {exit_talk_menu} name=back_btn x=0 y=352 z=6 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+display_minuku
 delete name=fback_btn
 bind_talkmenu2
+endmacro
+
+macro display_minuku
+obj general/brooch/brooch name=minuku_btn x=80 y=192 z=5
+gui Button {start_minuku} name=minuku_btn_dummy x=96 y=192 z=5 graphic=general/brooch/brooch_dummy hotkey=k_x
+endmacro
+
+macro start_minuku
+delete name=minuku_btn_dummy
+disable_court_record_button
+_hide_fake_cr_button
+sfx objection
+delete name=sel_left suppress
+delete name=sel_right suppress
+delete name=to1_btn suppress
+delete name=to2_btn suppress
+delete name=to3_btn suppress
+delete name=to4_btn suppress
+delete name=back_btn suppress
+{ANIM_LOCALMENU_TALK_CLEAR_MARKS}
+obj bg/white name=fakeflash y=192 z=10
+pause 1
+fade name=fakeflash out speed=100
+pause 2
+fade name=fakeflash in speed=100
+pause 1
+delete name=fakeflash
+pause 10
+delete name=minuku_btn
+delete name=minuku_btn_dummy
+{ANIM_MINUKU_START_1}
+script $_minuku_script noclear
 endmacro
 
 # when the user hits "back"

@@ -670,6 +670,7 @@ endmacro
 
 // handle up key & down key
 // (behavior is identical)
+// FIXME: behaves weird on pages with less than max icons
 macro r2_updownkey
 {get_count_from_page dat1}
 setvar dat2 $_ev_selected

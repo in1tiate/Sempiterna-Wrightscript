@@ -1,35 +1,85 @@
 macro checkscript
 set _checkmacro $1
+screenshot art/bg/topscreenmask width=256 height=192 x=0 y=0 rwidth=256 rheight=192
+obj bg/topscreenmask name=topscreenmask z=9 y=0
+obj bg/black name=darkenfg z=10 y=0
+fade name=darkenfg start=0 end=50 speed=5 nowait
 obj bg/black name=fadeobj z=12 y=192
 fade name=fadeobj in speed=10
 flush_record
 $_checkmacro
 delflag checkdone
 
+setflag killcurcol
 setup_record2
 setflag nosound
 select_current_ev
 showbigrecord
+fade name=darkenfg start=50 end=0 speed=5 nowait
 fade name=fadeobj out speed=10
 delete name=fadeobj
+delete name=darkenfg
 delete name=check_backbtn
+delete name=topscreenmask
 endmacro
 
 macro checkscript_back
 sfx Cancel
 endmacro
 
+// Nasty nasty hack to enable flashing cursor
+// Doesn't work in Godot as of 3/3/2025. Probably for the best -in1tiate
+macro cursor_colors
+flag killcurcol?
+goto finishcurcol
+
+is cursor_col_framecounter 0?
+set _examine_cursor_col 004dcf
+is cursor_col_framecounter 1 OR cursor_col_framecounter 5?
+set _examine_cursor_col 1c65d7
+is cursor_col_framecounter 2 OR cursor_col_framecounter 4?
+set _examine_cursor_col 347ddf
+is cursor_col_framecounter 3?
+set _examine_cursor_col 5596ef
+
+is_ex cursor_col_framecounter < 6?
+addvar cursor_col_framecounter 1
+is cursor_col_framecounter 6?
+setvar cursor_col_framecounter 0
+
+timer 4 cursor_colors
+goto endmacro
+
+label finishcurcol
+delflag killcurcol
+goto endmacro
+
+label endmacro
+endmacro
+
 macro ch_start
+setflag killcurcol
 sfx Confirm
 delflag ch_flip
+absvar _examine_clickx
+absvar _examine_clicky
 is_ex _examine_clicky > 96?
 setflag ch_flip
 set _x $_examine_clickx
-subvar _x 5
+subvar _x 115
 set _y $_examine_clicky
 addvar _y 192
-subvar _y 5
-obj general/ui/ch_cursor x=$_x y=$_y z=2 name=ch_cursor
+subvar _y 115
+obj general/ui/ch_select_start x=$_x y=$_y z=2 name=ch_cursor
+pause 10
+delete name=ch_cursor
+set _x $_examine_clickx
+subvar _x 12
+set _y $_examine_clicky
+addvar _y 192
+subvar _y 12
+obj general/ui/ch_select x=$_x y=$_y z=2 name=ch_cursor
+pause 20
 endmacro
 
 macro chtalk
@@ -41,9 +91,13 @@ flag ch_flip?
 set _ch_dia_y 193
 set _chtalk_chr $1
 set _chtalk_icn $2
+set _chtalk_side $3
+set chev_mcro ch_ev
+is _chtalk_side left?
+set chev_mcro ch_ev_left
 {ch_nti $1}
 isnotempty _chtalk_icn?
-ch_ev $1 $2
+$chev_mcro $1 $2
 
 isempty _chtalk_color?
 set _chtalk_color $color_w
@@ -81,24 +135,158 @@ delete name=ch_dia3 suppress
 {ch_msg_out}
 endmacro
 
+// ICON PORTRAITS (RIGHT)
+
 macro ch_ev
+
+// handle character changes
+delflag _ch_ev_fstchr
+set _ch_ev_chr_new $1
+// first call, handle
+isempty _ch_ev_chr?
+setflag _ch_ev_fstchr
+isempty _ch_ev_chr?
+set _ch_ev_chr $1
+
+// new character
+setflag _ch_ev_newchr
+is_ex _ch_ev_chr == _ch_ev_chr_new?
+delflag _ch_ev_newchr
+
+//delete name=coolblock
+//delete name=coolblock2
+//set cool_color FF0000
+//flag _ch_ev_newchr?
+//set cool_color 00FF00
+//textblock 148 286 256 192 color=$cool_color name=coolblock prev: $_ch_ev_chr
+//textblock 148 302 256 192 color=$cool_color name=coolblock2 new: $_ch_ev_chr_new 
+
+set _ch_ev_chr $1
+
+// scroll out old chr
+flag _ch_ev_newchr?
+scroll name=ev x=85 speed=10 nowait
+flag _ch_ev_newchr?
+scroll name=ev_frame x=85 speed=10
+
 joinvar _ch_ev dia/ $1 $2
 delete name=ev suppress
 delete name=ev_frame suppress
-noflag ch_flip?
-ev frame x=171 y=203 name=ev_frame
-noflag ch_flip?
-ev $_ch_ev x=174 y=206 name=ev
+
+// default x values
+set ch_evframe_x 171
+set ch_ev_x 174
+// default y values
+set ch_evframe_y 203
+set ch_ev_y 206
+
+// handle flip
 flag ch_flip?
-ev frame x=171 y=303 name=ev_frame
+addvar ch_evframe_y 100
 flag ch_flip?
-ev $_ch_ev x=174 y=306 name=ev
+addvar ch_ev_y 100
+
+// we need to scroll this one in
+flag _ch_ev_newchr OR _ch_ev_fstchr?
+addvar ch_evframe_x 85
+flag _ch_ev_newchr OR _ch_ev_fstchr?
+addvar ch_ev_x 85
+
+ev frame x=$ch_evframe_x y=$ch_evframe_y name=ev_frame
+ev $_ch_ev x=$ch_ev_x y=$ch_ev_y name=ev
+
+flag _ch_ev_newchr OR _ch_ev_fstchr?
+scroll name=ev x=-85 speed=10 nowait
+flag _ch_ev_newchr OR _ch_ev_fstchr?
+scroll name=ev_frame x=-85 speed=10
 endmacro
 
 macro ch_ev_hide
+set _ch_ev_chr
+delflag _ch_ev_newchr
+delflag _ch_ev_fstchr
+scroll name=ev x=85 speed=10 nowait
+scroll name=ev_frame x=85 speed=10
 delete name=ev suppress
 delete name=ev_frame suppress
 endmacro
+
+// ICON PORTRAITS (LEFT)
+
+macro ch_ev_left
+
+// handle character changes
+delflag _ch_ev2_fstchr
+set _ch_ev2_chr_new $1
+// first call, handle
+isempty _ch_ev2_chr?
+setflag _ch_ev2_fstchr
+isempty _ch_ev2_chr?
+set _ch_ev2_chr $1
+
+// new character
+setflag _ch_ev2_newchr
+is_ex _ch_ev2_chr == _ch_ev2_chr_new?
+delflag _ch_ev2_newchr
+
+//delete name=coolblock1
+//delete name=coolblock12
+//set cool_color FF0000
+//flag _ch_ev2_newchr?
+//set cool_color 00FF00
+//textblock 15 286 256 192 color=$cool_color name=coolblock1 prev: $_ch_ev2_chr
+//textblock 15 302 256 192 color=$cool_color name=coolblock12 new: $_ch_ev2_chr_new 
+
+set _ch_ev2_chr $1
+
+// scroll out old chr
+flag _ch_ev2_newchr?
+scroll name=ev2 x=-85 speed=10 nowait
+flag _ch_ev2_newchr?
+scroll name=ev2_frame x=-85 speed=10
+
+joinvar _ch_ev_left dia/ $1 $2
+delete name=ev2 suppress
+delete name=ev2_frame suppress
+
+// default x values
+set ch_ev2frame_x 15
+set ch_ev2_x 18
+// default y values
+set ch_evframe_y 203
+set ch_ev_y 206
+
+// handle flip
+flag ch_flip?
+addvar ch_evframe_y 100
+flag ch_flip?
+addvar ch_ev_y 100
+
+// we need to scroll this one in
+flag _ch_ev2_newchr OR _ch_ev2_fstchr?
+subvar ch_ev2frame_x 85
+flag _ch_ev2_newchr OR _ch_ev2_fstchr?
+subvar ch_ev2_x 85
+
+ev frame x=$ch_ev2frame_x y=$ch_evframe_y name=ev2_frame
+ev $_ch_ev_left x=$ch_ev2_x y=$ch_ev_y name=ev2
+
+flag _ch_ev2_newchr OR _ch_ev2_fstchr?
+scroll name=ev2 x=85 speed=10 nowait
+flag _ch_ev2_newchr OR _ch_ev2_fstchr?
+scroll name=ev2_frame x=85 speed=10
+endmacro
+
+macro ch_ev_left_hide
+set _ch_ev2_chr
+delflag _ch_ev2_newchr
+delflag _ch_ev2_fstchr
+scroll name=ev2 x=-85 speed=10 nowait
+scroll name=ev2_frame x=-85 speed=10
+delete name=ev2 suppress
+delete name=ev2_frame suppress
+endmacro
+
 
 macro ch_msg_in
 delete name=ch_msg suppress
@@ -106,8 +294,7 @@ noflag ch_flip?
 obj general/ui/ch_msgwindow_down-in name=ch_msg y=335 z=3
 flag ch_flip?
 obj general/ui/ch_msgwindow_up-in name=ch_msg y=192 z=3
-pause 11
-{ch_msg_show}
+timer 11 ch_msg_show
 endmacro
 
 macro ch_msg_out
@@ -138,6 +325,7 @@ endmacro
 macro ch_nti
 delete name=ch_nametag suppress
 {ch_msg_in}
+pause 11
 noflag ch_flip?
 obj general/nametag/$1 y=323 name=ch_nametag z=3
 flag ch_flip?

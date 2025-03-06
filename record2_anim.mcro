@@ -1,3 +1,11 @@
+///
+/// RECORD2_ANIM.MCRO
+/// by in1tiate
+/// Animation logic for RECORD2.MCRO
+/// Sparsely documented, sorry...
+///
+
+
 // LOCALMENU EASE OUT
 macro ANIM_RECORD_LOCALOUT
 set __goawayani general/localmenu/goaway
@@ -9,6 +17,10 @@ delete name=goaway_ani
 delete name=recordbut_in
 endmacro
 
+
+// Special! Displays an animation for getting new evidence.
+// Probably shouldn't actually be in this file, but I don't feel
+// like moving it
 macro ANIM_RECORD_GETEVIDENCE
 {ANIM_LOCALMENU_TALK_END}
 delete name=delaymasker suppress
@@ -57,6 +69,7 @@ setflag nosound
 //delflag record_getev
 endmacro
 
+// Timers!
 macro ANIM_RECORD_FLASH_CURRENT
 {ANIM_RECORD_SELECT_CURRENT}
 timer 4 _ANIM_HIDE_SEL
@@ -98,24 +111,39 @@ delete name=fakebg suppress
 getvar temp_bigbg2 _bigbutton_bg
 joinvar dat4 $temp_bigbg2 lines
 obj $dat4 name=recordbg_in y=192 z=-1
+
 // upper border logic
+
+// not presenting evidence, inventory not restricted
 noflag presentmode?
 obj general/ui/record/borders_record_top name=record_border1_in x=0 y=192 z=5
+// presenting evidence, inventory not restricted
 flag presentmode?
 obj general/ui/record/borders_present_top name=record_border1_in x=0 y=192 z=5
+
+// presenting evidence, inventory restricted
+// TODO: actually handle inventory restrictions w/o evidence presenting
 isnotempty force_inventory?
 delete name=record_border1_in
 isnotempty force_inventory?
 obj general/ui/record/borders_presentforce_top name=record_border1_in x=0 y=192 z=5
+
+// special, get evidence animation
 flag record_getev?
 delete name=record_border1_in
 flag record_getev?
 obj general/ui/record/borders_recordforce_top name=record_border1_in x=0 y=192 z=5
+
+
 // lower border logic
+
+// back button
 noflag record_noback?
 obj general/ui/record/borders_record_bot name=record_border2_in x=0 y=352 z=5
+// no back button
 flag record_noback?
 obj general/ui/record/borders_noback_bot name=record_border2_in x=0 y=352 z=5
+
 // play the grid swing-in animation
 obj general/ui/record/grid_in x=0 y=192 z=0 name=grid_in
 pause 10
@@ -128,21 +156,27 @@ obj $acc1 name=banner_in x=0 y=180 z=0
 joinvar acc1 general/ui/record/ $dat1 _scrollon
 isempty force_inventory?
 obj $acc1 name=switch_btn_in x=179 y=192 z=6
-// display present/back according to flags
+
+// scroll in present button
 flag presentmode?
 obj general/ui/record/present_scrollon name=present_btn_in x=73 y=192 z=6
+
+// create back button
 noflag record_noback?
 obj $back_btn_path name=back_btn_in x=0 y=384 z=6
 
 // scroll the ui in
 noflag record_noback?
 scroll name=back_btn_in y=-32 speed=4 nowait
+// inventory name banner
 scroll name=banner_in y=22 speed=4 nowait
 
+// inventory nameplate background
 obj general/ui/record/nameplate name=nameplate_in x=25 y=192 z=0
 scroll name=nameplate_in y=36 speed=6 nowait
 pause 4
 
+// page buttons
 obj general/ui/record/button_left name=buttonleft_in x=-16 y=248
 scroll name=buttonleft_in x=16 speed=4 nowait
 obj general/ui/record/button_right name=buttonright_in x=256 y=248
@@ -164,7 +198,11 @@ delete name=recordbg_in
 delete name=record_scrolloff
 endmacro
 
-// CLOSE RECORD
+/////////
+
+// ANIM_RECORD_CLOSE
+
+////////
 macro ANIM_RECORD_CLOSE
 // e.g. "talklines"
 joinvar dat4 $temp_bigbg2 lines

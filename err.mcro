@@ -1,18 +1,27 @@
 macro THROW_ERROR
+set err_lower $1
+set err_y 0
+isnotempty err_lower?
+set err_y 192
 exportvars errlog.dat _err _err_long
 obj bg/black y=-192 name=errbg z=4
 scroll name=errbg y=96 speed=16
 set _font_block nds12.ttf
 set _font_block_size 10
-textblock 4 16 248 16 color=$color_r name=errblock Script threw an internal error!
-textblock 4 32 248 32 color=$color_r name=errblock2 $_err
-textblock 4 64 248 16 color=$color_w name=errblock3 Error information logged. Contact developer
-textblock 4 80 248 16 color=$color_w name=errblock4 Press ENTER to continue...
+addvar err_y 16
+textblock 4 $err_y 248 16 color=$color_r name=errblock Script threw an internal error!
+addvar err_y 16
+textblock 4 $err_y 248 32 color=$color_r name=errblock2 $_err
+addvar err_y 32
+textblock 4 $err_y 248 16 color=$color_w name=errblock3 Error information logged. Contact developer
+addvar err_y 16
+textblock 4 $err_y 248 16 color=$color_w name=errblock4 Press ENTER to continue...
 savegame ERRORSAVE_DO_NOT_LOAD hide
 waitenter
 delete name=errblock
 delete name=errblock2
 delete name=errblock3
+delete name=errblock4
 scroll name=errbg y=-96 speed=16
 delete name=errbg
 endmacro

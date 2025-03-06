@@ -19,7 +19,7 @@ set _remainder
 
 // 0 divided by anything is 0
 is_ex _dividend == 0?
-goto _intdiv_loop_end
+goto _intdiv_loop_end$0
 
 // anything divided by 1 is itself
 is_ex _divisor 1?
@@ -27,13 +27,13 @@ set _quotient $_dividend
 is_ex _divisor 1?
 set _remainder 0
 is_ex _divisor 1?
-goto _intdiv_loop_end
+goto _intdiv_loop_end$0
 
 // Special handler for divisor > dividend
 is_ex _divisor > _dividend?
 set _remainder $_dividend
 is_ex _divisor > _dividend?
-goto _intdiv_loop_end
+goto _intdiv_loop_end$0
 
 // dividing by 0 would cause an infinite loop
 is_ex _divisor == 0?
@@ -41,15 +41,15 @@ set _err Fatal error: Call to intdiv $_dividend $_divisor would result in undefi
 is_ex _divisor == 0?
 THROW_ERROR
 is_ex _divisor == 0?
-goto _intdiv_loop_end
+goto _intdiv_loop_end$0
 
-label _intdiv_loop_start
+label _intdiv_loop_start$0
 addvar _quotient 1
 subvar _dividend $_divisor
 is_ex _dividend < _divisor?
-goto _intdiv_loop_end
-goto _intdiv_loop_start
-label _intdiv_loop_end
+goto _intdiv_loop_end$0
+goto _intdiv_loop_start$0
+label _intdiv_loop_end$0
 set _remainder $_dividend
 endmacro
 

@@ -1,7 +1,7 @@
 macro disable_saveload
 delete name=nosaving suppress
 set _allow_saveload false
-obj nosaving name=nosaving x=231 y=-25 z=1000
+obj nosaving name=nosaving x=231 y=-25 z=9
 fade name=nosaving start=100 end=50 speed=50 nowait
 scroll name=nosaving y=25 nowait speed=5
 endmacro

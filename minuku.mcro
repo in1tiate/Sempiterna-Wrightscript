@@ -1,0 +1,242 @@
+macro ANIM_MINUKU_START_1
+bg black stack fade
+obj general/minuku/minuku_startup name=minuku_startup x=0 y=192 z=4
+sfx minuku_start
+pause 75
+obj general/minuku/eyestartup_minuki name=eyestartup x=0 y=192 z=4
+pause 15
+obj bg/white name=minukufade x=0 y=192 z=10
+fade name=minukufade in speed=10 nowait
+pause 60
+delete name=minuku_startup
+set shake_framecounter 0
+endmacro
+
+macro ANIM_MINUKU_START_2
+fade name=minukufade out speed=10 nowait
+bg minukubg stack fade nowait
+pause 60
+delete name=minuku_fade
+endmacro
+
+macro bind_minuku
+gui Button {minuku_upkey} name=mi_upkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_up
+gui Button {minuku_downkey} name=mi_downkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_down
+gui Button {minuku_leftkey} name=mi_leftkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_left
+gui Button {minuku_rightkey} name=mi_rightkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_right
+endmacro
+
+macro minuku_rangecheck
+delflag minuku_inrange
+getprop minuku_cursor_position_x name=slice_1 prop=x
+{minuku_update_coord x minuku_cursor_position_x}
+getprop minuku_cursor_position_y name=slice_1 prop=y
+{minuku_update_coord y minuku_cursor_position_y}
+
+is_ex (minuku_cursor_position_x >= minuku_range_x) AND (minuku_cursor_position_x <= (minuku_range_x + minuku_range_w)) AND (minuku_cursor_position_y >= minuku_range_y) AND (minuku_cursor_position_y <= (minuku_range_y + minuku_range_h))?
+setflag minuku_inrange
+//{minuku_debug_display}
+endmacro
+
+macro timed_update
+flag endupdate?
+goto finishupdate
+
+{update_minuku_character_slices}
+timer 8 timed_update
+goto endmacro
+
+label finishupdate
+delflag endupdate
+goto endmacro
+
+label endmacro
+endmacro
+
+// this is genuinely so ridiculous and overengineered
+// okay. here's the problem. the cool spinning background either overlaps
+// with the perceive character, or the perceive character winds up on the top screen
+// since it's not possible to shrink or otherwise occulde the background,
+// we instead slice the character in twenty-four 16px horizontal slices
+// and use annoying math to determine whether they are on the bottom screen or not (with about 18px of leeway).
+// this used to cause a TREMENDOUS amount of lag before i realized
+// that the check only needs to run every 8 frames instead of every 2
+
+macro setup_minuku_character_slices
+setvar slice_y 0
+setvar slice_i 1
+label slice_loop$0
+joinvar slice_current slice_ $slice_i
+joinvar slice_path general/minuku/char/placeholder/default2/ $slice_current
+obj $slice_path y=$slice_y z=0 name=$slice_current
+addvar slice_y 16
+addvar slice_i 1
+is_ex slice_i < 25?
+goto slice_loop$0
+endmacro
+
+macro scroll_minuku_character_slices
+setvar slice_i 1
+label slice_loop$0
+joinvar slice_current slice_ $slice_i
+scroll name=$slice_current x=$1 y=$2 speed=$3 nowait
+addvar slice_i 1
+is_ex slice_i < 25?
+goto slice_loop$0
+endmacro
+
+macro update_minuku_character_slices
+
+setvar slice_i 1
+label slice_loop$0
+joinvar slice_current slice_ $slice_i
+fade name=$slice_current start=0 end=0 nowait
+is_ex slice_i * 16 - 1 <= minuku_cursor_position_y + 96 AND slice_i * 16 - 1 >= minuku_cursor_position_y - 72?
+fade name=$slice_current start=100 end=100 nowait
+
+addvar slice_i 1
+is_ex slice_i < 25?
+goto slice_loop$0
+
+endmacro
+
+// player is holding LEFT
+macro minuku_leftkey
+{minuku_rangecheck}
+is_ex minuku_cursor_position_x < 511 doscroll$0 fail=fail$0
+label doscroll$0
+{scroll_minuku_character_slices 1 0 2}
+label fail$0
+//scroll name=minuku_chr x=1 speed=1 nowait
+endmacro
+
+// player is holding RIGHT
+macro minuku_rightkey
+{minuku_rangecheck}
+is_ex minuku_cursor_position_x > 0 doscroll$0 fail=fail$0
+label doscroll$0
+{scroll_minuku_character_slices -1 0 2}
+label fail$0
+//scroll name=minuku_chr x=-1 speed=1 nowait
+endmacro
+
+// player is holding DOWN
+macro minuku_downkey
+{minuku_rangecheck}
+// avoid seeing underneath a character sprite
+is_ex minuku_cursor_position_y < 335 doscroll$0 fail=fail$0
+label doscroll$0
+{scroll_minuku_character_slices 0 -1 2}
+label fail$0
+//scroll name=minuku_chr y=-1 speed=1 nowait
+endmacro
+
+// player is holding UP
+macro minuku_upkey
+{minuku_rangecheck}
+is_ex minuku_cursor_position_y > 0 doscroll$0 fail=fail$0
+label doscroll$0
+{scroll_minuku_character_slices 0 1 2}
+label fail$0
+//scroll name=minuku_chr y=1 speed=1 nowait
+endmacro
+
+macro minuku_debug_display
+delete name=textblocky
+textblock 16 32 256 192 name=textblocky cursor y: $minuku_cursor_position_y
+delete name=textblockx
+textblock 16 16 256 192 name=textblockx cursor x: $minuku_cursor_position_x
+set mi_range_dbg false
+flag minuku_inrange?
+set mi_range_dbg true
+delete name=textblockr
+textblock 16 48 256 192 name=textblockr in range: $mi_range_dbg
+endmacro
+
+// translate an x coordinate from 128, -384 to 0, 512 range
+// or translate a y coordinate from 288, -96 to 0, 384 range
+// used exclusively to make my life easier when setting up perceive regions
+// usage:
+// minuku_update_coord [x|y] variable_to_update
+macro minuku_update_coord
+set coordmode $1
+getvar coord $2
+goto coord$1$0
+
+// x coordinate
+// starts out as 128, -384
+// translate to 512, 0
+label coordx$0
+addvar coord 384
+// then flip it
+set coord_tmp 512
+goto coordfinish$0
+
+// y coordinate
+// starts out as 288, -96
+// translate to 384, 0
+label coordy$0
+addvar coord 96
+// then flip it
+set coord_tmp 384
+goto coordfinish$0
+
+label coordfinish$0
+// this step is the same
+// for both x and y
+subvar coord_tmp $coord
+setvar coord $coord_tmp
+
+// discard the decimal place
+absvar coord
+set $2 $coord
+endmacro
+
+// unbind keys for perceive
+macro unbind_minuku
+delete name=mi_upkey_handler
+delete name=mi_downkey_handler
+delete name=mi_leftkey_handler
+delete name=mi_rightkey_handler
+endmacro
+
+// unused, left in because it was fun to write
+macro shake_obj
+// if called with an argument, save it
+set staging $1
+isnotempty staging?
+set obj_to_shake $1
+set staging $2
+isnotempty staging?
+set obj_to_shake2 $2
+
+// loop has to be manually stopped
+flag stopshake?
+goto finishshake
+
+// moving up and left 1px
+is_ex shake_framecounter < 4?
+scroll name=$obj_to_shake x=-1 y=-1 speed=1 nowait
+is_ex shake_framecounter < 4?
+scroll name=$obj_to_shake2 x=-1 y=-1 speed=1 nowait
+is_ex shake_framecounter < 4?
+addvar shake_framecounter 1
+
+// moved a total of 4 pixels, so reset on the fifth
+is shake_framecounter 4?
+scroll name=$obj_to_shake x=4 y=4 speed=4 nowait
+is shake_framecounter 4?
+scroll name=$obj_to_shake2 x=4 y=4 speed=4 nowait
+is shake_framecounter 4?
+set shake_framecounter 0
+
+// call again in 2 frames
+timer 2 shake_obj
+goto endmacro
+
+label finishshake
+delflag stopshake
+goto endmacro
+
+label endmacro
+endmacro

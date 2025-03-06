@@ -13,7 +13,7 @@ obj general/vs/slice name=slicedef y=219 z=7
 obj general/vs/slice name=slicepro y=296 z=7
 pause 3
 obj $_vs_def name=vsdef y=219 z=7 x=-155
-obj $_vs_pro name=vspro y=296 z=7 x=155
+obj $_vs_pro name=vspro flipx y=296 z=7 x=155
 scroll name=vsdef x=15 speed=15 nowait
 scroll name=vspro x=-15 speed=15
 pause 1

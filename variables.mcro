@@ -146,9 +146,9 @@ joinvar _bigbutton_img general/ui $_bigbutton_theme /buttonpress
 joinvar _bigbutton_cross general/ui $_bigbutton_theme /cross_exam_buttons
 joinvar _bigbutton_comeback general/ui $_bigbutton_theme /button-comeback-ani
 joinvar _bigbutton_leave general/ui $_bigbutton_theme /button-leave-ani
-setvar _bg_main bg/main2
+joinvar _bg_main bg/main2 $_bigbutton_theme
 joinvar _bg_talk bg/talk $_bigbutton_theme
-setvar _bg_move bg/move
+joinvar _bg_move bg/move $_bigbutton_theme
 endmacro
 
 macro reset_skiptext

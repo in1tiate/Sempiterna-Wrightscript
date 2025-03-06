@@ -53,14 +53,12 @@ is scroll_internal l scroll_left
 scroll x=$internal_scroll_distancex y=$internal_scroll_distancey speed=6 nowait
 pause 45 script
 setflag screen_right
-companionout
 goto endmacro
 
 label scroll_left
 scroll x=$internal_scroll_distancex y=$internal_scroll_distancey speed=6 nowait
 pause 45 script
 delflag screen_right
-companionout
 goto endmacro
 
 label endmacro
@@ -369,11 +367,16 @@ scroll name=backgroundexamine y=177 speed=20 nowait
 setflag examine_menu_open
 set examine_nocr $nocr
 isnot examine_nocr true {enable_court_record_button}
+// see checkscripts.mcro
+set cursor_col_framecounter 0
+cursor_colors
 label skip
 endmacro
 
 #Disable examine mode, MUST be run when out of examine.
 macro examine_scrolloff
+// see checkscripts.mcro
+setflag killcurcol
 noflag examine_menu_open skip
 delflag examine_menu_open
 isnot examine_scrollon_dark false?
@@ -382,7 +385,7 @@ isnot internal_scrollon_adjustment_fix true?
 scroll name=backgroundexamine y=-192 speed=20 nowait
 is internal_scrollon_adjustment_fix true?
 scroll name=backgroundexamine y=-177 speed=20 nowait
-sfx Scroll
+//sfx Scroll
 pause 10 script
 fade start=100 end=0 speed=10 name=backgroundexamine nowait
 fade start=0 end=100 speed=10 name=guibg nowait

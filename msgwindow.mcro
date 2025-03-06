@@ -42,6 +42,9 @@ delete name=slide
 {nti_clear}
 endmacro
 
+// Message window part of the functionality
+// for displaying selection prompts
+// Works for all kinds of prompts
 macro msgwindow_question
 obj bg/black name=darken z=3
 delete name=msgwindow suppress
@@ -53,29 +56,38 @@ fade name=darken out speed=100
 set prompt_type $2
 isempty prompt_type?
 set prompt_type selectanswer
+
+// godotwright supports scrolling the text box object directly
 flag godotwright?
 set _textbox_skipupdate true
 flag godotwright?
 "{c g}{spd0}{sound none}{$_last_written_text}"
 flag godotwright?
 goto skipqimage
+
+// create prerendered text object
 set _question_image general/question/$1
 obj $_question_image name=qimage y=128 z=3
+
 label skipqimage
-obj bg/borders y=192 z=5 name=qborders
 joinvar prompt_type general/ui/ $prompt_type
 obj $prompt_type name=selectanswer y=186 z=3
 fade name=darken start=0 end=50 speed=2 nowait
+
+// scroll our prerendered text
 noflag godotwright?
 scroll name=qimage y=-24 speed=2 nowait
+
+// or the real text, if possible
 flag godotwright?
 scroll name=_textbox_ y=-24 speed=2 nowait
+
 scroll name=msgwindow y=-24 speed=2 nowait
 scroll name=selectanswer y=-18 speed=2 nowait
 scroll name=nti_nametag y=-24 speed=2
-delete name=qborders
 endmacro
 
+// fix everything for after selection
 macro msgwindow_qreset
 flag godotwright?
 set _textbox_skipupdate false

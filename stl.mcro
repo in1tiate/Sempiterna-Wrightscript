@@ -76,10 +76,11 @@ getvar L_ARY_SIZE $__ARY_SIZE
 joinvar __ARY_USED $__ARY_NAME USED
 getvar L_ARY_USED $__ARY_USED
 
-is_ex L_ARY_USED >= L_ARY_SIZE?
+is_ex L_ARY_USED >= L_ARY_SIZE throw_error$0 fail=continue1$0
+label throw_error$0
 set _err Fatal error: Tried to append item ( $2 ) to array ( $1 ) but array was full!
-is_ex L_ARY_USED >= L_ARY_SIZE?
 THROW_ERROR
+label continue1$0
 
 addvar L_ARY_USED 1
 addvar $__ARY_USED 1
@@ -121,10 +122,11 @@ endmacro
 // Syntax: ARRAY_INSERT {array} {index} {item}
 macro ARRAY_INSERT
 
-is_ex L_ARY_USED >= L_ARY_SIZE?
+is_ex L_ARY_USED >= L_ARY_SIZE throw_error$0 fail=continue1$0
+label throw_error$0
 set _err Fatal error: Tried to insert item ( $2 ) into array ( $1 ) but array was full!
-is_ex L_ARY_USED >= L_ARY_SIZE?
 THROW_ERROR
+label continue1$0
 
 joinvar __ARY_NAME ARRAY_ $1 _
 set __ARY_CAP $L_ARY_USED
@@ -300,22 +302,4 @@ goto $3
 delflag _ITERATOR_DONE
 set _ITER
 set _ITER_RANGE
-endmacro
-
-
-//// intvar
-//// caps a variable to integer range
-//// might not actually work
-macro intvar
-setvar in_mat1 $1
-label intvar_iter
-isempty _ITER?
-goto intvar_iter_start
-
-is_ex in_mat1 > _ITER?
-set in_mat2 $_ITER
-
-label intvar_iter_start
-{ITERATE 0 $2 intvar_iter}
-set $1 $in_mat2
 endmacro
