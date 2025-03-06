@@ -19,11 +19,47 @@ pause 60
 delete name=minuku_fade
 endmacro
 
+macro spinbg
+flag stopspin?
+goto finishspin$0
+rotate degrees=360 speed=1 name=minukuspin nowait
+timer 360 spinbg
+goto endmacro$0
+
+label finishspin$0
+delflag stopspin
+
+label endmacro$0
+endmacro
+
 macro bind_minuku
-gui Button {minuku_upkey} name=mi_upkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_up
-gui Button {minuku_downkey} name=mi_downkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_down
-gui Button {minuku_leftkey} name=mi_leftkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_left
-gui Button {minuku_rightkey} name=mi_rightkey_handler graphic=code_dummy hold x=-2 y=-2 hotkey=k_right
+
+// cardinals
+gui Button {minuku_leftkey} x=0 y=256 hold name=minuku_btn_left graphic=general/ui/minuku/button_minuku_left hotkey=k_left
+gui Button {minuku_rightkey} x=160 y=256 hold name=minuku_btn_right graphic=general/ui/minuku/button_minuku_right hotkey=k_right
+gui Button {minuku_upkey} x=96 y=192 hold name=minuku_btn_up graphic=general/ui/minuku/button_minuku_up hotkey=k_up
+gui Button {minuku_downkey} x=96 y=300 hold name=minuku_btn_down graphic=general/ui/minuku/button_minuku_down hotkey=k_down
+// ordinals
+gui Button {minuku_upleft} x=0 y=192 hold name=minuku_btn_upleft graphic=general/ui/minuku/button_minuku_upleft
+gui Button {minuku_upright} x=160 y=192 hold name=minuku_btn_upright graphic=general/ui/minuku/button_minuku_upright
+gui Button {minuku_downleft} x=0 y=300 hold name=minuku_btn_downleft graphic=general/ui/minuku/button_minuku_downleft
+gui Button {minuku_downright} x=160 y=300 hold name=minuku_btn_downright graphic=general/ui/minuku/button_minuku_downright
+
+endmacro
+
+macro unbind_minuku
+
+// cardinals
+delete name=minuku_btn_left
+delete name=minuku_btn_right
+delete name=minuku_btn_up
+delete name=minuku_btn_down
+// ordinals
+delete name=minuku_btn_upleft
+delete name=minuku_btn_upright
+delete name=minuku_btn_downleft
+delete name=minuku_btn_downright
+
 endmacro
 
 macro minuku_rangecheck
@@ -32,6 +68,11 @@ getprop minuku_cursor_position_x name=slice_1 prop=x
 {minuku_update_coord x minuku_cursor_position_x}
 getprop minuku_cursor_position_y name=slice_1 prop=y
 {minuku_update_coord y minuku_cursor_position_y}
+
+
+getprop minuku_bg_position_y name=bgslice_1 prop=y
+{minuku_update_coord bgy minuku_bg_position_y}
+
 
 is_ex (minuku_cursor_position_x >= minuku_range_x) AND (minuku_cursor_position_x <= (minuku_range_x + minuku_range_w)) AND (minuku_cursor_position_y >= minuku_range_y) AND (minuku_cursor_position_y <= (minuku_range_y + minuku_range_h))?
 setflag minuku_inrange
@@ -43,7 +84,8 @@ flag endupdate?
 goto finishupdate
 
 {update_minuku_character_slices}
-timer 8 timed_update
+{update_minuku_bg_slices}
+timer 10 timed_update
 goto endmacro
 
 label finishupdate
@@ -57,10 +99,10 @@ endmacro
 // okay. here's the problem. the cool spinning background either overlaps
 // with the perceive character, or the perceive character winds up on the top screen
 // since it's not possible to shrink or otherwise occulde the background,
-// we instead slice the character in twenty-four 16px horizontal slices
+// we instead slice the character in 32 16px horizontal slices
 // and use annoying math to determine whether they are on the bottom screen or not (with about 18px of leeway).
-// this used to cause a TREMENDOUS amount of lag before i realized
-// that the check only needs to run every 8 frames instead of every 2
+// we also have to do this for the background (which is mercifully made up of "only" 22 slices)
+// this is TREMENDOUSLY laggy. moving diagonally while this all runs slows the engine to a crawl
 
 macro setup_minuku_character_slices
 setvar slice_y 0
@@ -71,7 +113,7 @@ joinvar slice_path general/minuku/char/placeholder/default2/ $slice_current
 obj $slice_path y=$slice_y z=0 name=$slice_current
 addvar slice_y 16
 addvar slice_i 1
-is_ex slice_i < 25?
+is_ex slice_i < 33?
 goto slice_loop$0
 endmacro
 
@@ -79,9 +121,9 @@ macro scroll_minuku_character_slices
 setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
-scroll name=$slice_current x=$1 y=$2 speed=$3 nowait
+scroll name=$slice_current x=$1 y=$2 speed=100000
 addvar slice_i 1
-is_ex slice_i < 25?
+is_ex slice_i < 33?
 goto slice_loop$0
 endmacro
 
@@ -91,54 +133,219 @@ setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
 fade name=$slice_current start=0 end=0 nowait
-is_ex slice_i * 16 - 1 <= minuku_cursor_position_y + 96 AND slice_i * 16 - 1 >= minuku_cursor_position_y - 72?
+// avoids a nasty bug in is_ex preventing comparisons with negative numbers
+is_ex minuku_cursor_position_y < 104 slice_show$0
+is_ex slice_i * 16 - 1 <= minuku_cursor_position_y + 96 AND slice_i * 16 - 1 >= minuku_cursor_position_y - 104 slice_show$0 fail=slice_hide$0
+label slice_show$0
 fade name=$slice_current start=100 end=100 nowait
+label slice_hide$0
 
 addvar slice_i 1
-is_ex slice_i < 25?
+is_ex slice_i < 33?
 goto slice_loop$0
 
 endmacro
 
+macro setup_minuku_bg_slices
+setvar bgslice_y 0
+setvar bgslice_i 1
+label slice_loop$0
+joinvar bgslice_current bgslice_ $bgslice_i
+joinvar bgslice_path bg/minukucrt/ $bgslice_current
+obj $bgslice_path y=$bgslice_y z=-1 name=$bgslice_current
+addvar bgslice_y 16
+addvar bgslice_i 1
+is_ex bgslice_i < 23?
+goto slice_loop$0
+endmacro
+
+macro scroll_minuku_bg_slices
+setvar bgslice_i 1
+label slice_loop$0
+joinvar bgslice_current bgslice_ $bgslice_i
+scroll name=$bgslice_current x=$1 y=$2 speed=$3 speed=100000
+addvar bgslice_i 1
+is_ex bgslice_i < 23?
+goto slice_loop$0
+endmacro
+
+macro update_minuku_bg_slices
+
+setvar bgslice_i 1
+label slice_loop$0
+joinvar bgslice_current bgslice_ $bgslice_i
+fade name=$bgslice_current start=0 end=0 nowait
+// avoids a nasty bug in is_ex preventing comparisons with negative numbers
+is_ex minuku_bg_position_y < 86 slice_show$0
+is_ex bgslice_i * 16 - 1 <= minuku_bg_position_y + 96 AND bgslice_i * 16 - 1 >= minuku_bg_position_y - 86 slice_show$0 fail=slice_hide$0
+label slice_show$0
+fade name=$bgslice_current start=100 end=100 nowait
+label slice_hide$0
+
+addvar bgslice_i 1
+is_ex bgslice_i < 23?
+goto slice_loop$0
+
+endmacro
+
+// Limits how often movements can be commanded
+// Very useful
+macro minuku_movement_ticker
+flag endticker?
+goto finishticker$0
+
+{minuku_rangecheck}
+
+set scroll_x 0
+set scroll_y 0
+set scroll_bg_x 0
+set scroll_bg_y 0
+
+flag mi_hold_up AND mi_hold_left upleft$0
+flag mi_hold_up AND mi_hold_right upright$0
+flag mi_hold_down AND mi_hold_left downleft$0
+flag mi_hold_down AND mi_hold_right downright$0
+
+flag mi_hold_up up$0
+flag mi_hold_down down$0
+flag mi_hold_left left$0
+flag mi_hold_right right$0
+goto endtick$0
+
+label upleft$0
+{minuku_scroll_up}
+{minuku_scroll_left}
+goto doscroll$0
+
+label upright$0
+{minuku_scroll_up}
+{minuku_scroll_right}
+goto doscroll$0
+
+label downleft$0
+{minuku_scroll_down}
+{minuku_scroll_left}
+goto doscroll$0
+
+label downright$0
+{minuku_scroll_down}
+{minuku_scroll_right}
+goto doscroll$0
+
+label up$0
+{minuku_scroll_up}
+goto doscroll$0
+
+label down$0
+{minuku_scroll_down}
+goto doscroll$0
+
+label left$0
+{minuku_scroll_left}
+goto doscroll$0
+
+label right$0
+{minuku_scroll_right}
+goto doscroll$0
+
+
+label doscroll$0
+{scroll_minuku_character_slices $scroll_x $scroll_y 4}
+{scroll_minuku_bg_slices $scroll_bg_x $scroll_bg_y 2}
+
+label endtick$0
+delflag mi_hold_up
+delflag mi_hold_down
+delflag mi_hold_left
+delflag mi_hold_right
+
+timer 2 minuku_movement_ticker
+
+label finishticker$0
+delflag endticker
+goto endmacro$0
+
+label endmacro$0
+endmacro
+
+// Scroll up, if we can
+macro minuku_scroll_up
+is_ex minuku_cursor_position_y > 68 doscroll$0 fail=fail$0
+label doscroll$0
+set scroll_y 4
+set scroll_bg_y 2
+label fail$0
+endmacro
+
+// Scroll down, if we can
+macro minuku_scroll_down
+is_ex minuku_cursor_position_y < 512 doscroll$0 fail=fail$0
+label doscroll$0
+set scroll_y -4
+set scroll_bg_y -2
+label fail$0
+endmacro
+
+// Scroll left, if we can
+macro minuku_scroll_left
+is_ex minuku_cursor_position_x > 0 doscroll$0 fail=fail$0
+label doscroll$0
+set scroll_x 4
+set scroll_bg_x 2
+label fail$0
+endmacro
+
+// Scroll right, if we can
+macro minuku_scroll_right
+is_ex minuku_cursor_position_x < 512 doscroll$0 fail=fail$0
+label doscroll$0
+set scroll_x -4
+set scroll_bg_x -2
+label fail$0
+endmacro
+
 // player is holding LEFT
 macro minuku_leftkey
-{minuku_rangecheck}
-is_ex minuku_cursor_position_x < 511 doscroll$0 fail=fail$0
-label doscroll$0
-{scroll_minuku_character_slices 1 0 2}
-label fail$0
-//scroll name=minuku_chr x=1 speed=1 nowait
+setflag mi_hold_left
 endmacro
 
 // player is holding RIGHT
 macro minuku_rightkey
-{minuku_rangecheck}
-is_ex minuku_cursor_position_x > 0 doscroll$0 fail=fail$0
-label doscroll$0
-{scroll_minuku_character_slices -1 0 2}
-label fail$0
-//scroll name=minuku_chr x=-1 speed=1 nowait
+setflag mi_hold_right
 endmacro
 
 // player is holding DOWN
 macro minuku_downkey
-{minuku_rangecheck}
-// avoid seeing underneath a character sprite
-is_ex minuku_cursor_position_y < 335 doscroll$0 fail=fail$0
-label doscroll$0
-{scroll_minuku_character_slices 0 -1 2}
-label fail$0
-//scroll name=minuku_chr y=-1 speed=1 nowait
+setflag mi_hold_down
 endmacro
 
 // player is holding UP
 macro minuku_upkey
-{minuku_rangecheck}
-is_ex minuku_cursor_position_y > 0 doscroll$0 fail=fail$0
-label doscroll$0
-{scroll_minuku_character_slices 0 1 2}
-label fail$0
-//scroll name=minuku_chr y=1 speed=1 nowait
+setflag mi_hold_up
+endmacro
+
+// player is holding the UP-LEFT button (mouse controls only)
+macro minuku_upleft
+{minuku_upkey}
+{minuku_leftkey}
+endmacro
+
+// player is holding the UP-RIGHT button (mouse controls only)
+macro minuku_upright
+{minuku_upkey}
+{minuku_rightkey}
+endmacro
+
+// player is holding the DOWN-LEFT button (mouse controls only)
+macro minuku_downleft
+{minuku_downkey}
+{minuku_leftkey}
+endmacro
+
+// player is holding the DOWN-RIGHT button (mouse controls only)
+macro minuku_downright
+{minuku_downkey}
+{minuku_rightkey}
 endmacro
 
 macro minuku_debug_display
@@ -173,17 +380,26 @@ set coord_tmp 512
 goto coordfinish$0
 
 // y coordinate
-// starts out as 288, -96
-// translate to 384, 0
+// starts out as 448, -64
+// translate to 512, 0
 label coordy$0
-addvar coord 96
+addvar coord 64
 // then flip it
 set coord_tmp 384
 goto coordfinish$0
 
+// bg y coordinate
+// starts out as 320, -26
+// translate to 461, 0
+label coordbgy$0
+addvar coord 26
+// then flip it
+set coord_tmp 320
+goto coordfinish$0
+
 label coordfinish$0
 // this step is the same
-// for both x and y
+// for all coords
 subvar coord_tmp $coord
 setvar coord $coord_tmp
 
@@ -192,15 +408,6 @@ absvar coord
 set $2 $coord
 endmacro
 
-// unbind keys for perceive
-macro unbind_minuku
-delete name=mi_upkey_handler
-delete name=mi_downkey_handler
-delete name=mi_leftkey_handler
-delete name=mi_rightkey_handler
-endmacro
-
-// unused, left in because it was fun to write
 macro shake_obj
 // if called with an argument, save it
 set staging $1

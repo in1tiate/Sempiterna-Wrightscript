@@ -274,6 +274,8 @@ flag magatama_presented AND psycholock_active?
 setvar _present_shout takethat
 flag magatama_presented AND psycholock_active?
 setvar _present_char phoenix
+flag magatama_presented AND psycholock_active?
+music none
 
 //Special case: badge present counter
 is _selected badge?
