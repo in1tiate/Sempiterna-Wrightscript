@@ -151,7 +151,7 @@ endmacro
 
 #sfx for invalid buttons.
 macro invalid
-sfx Blink
+//sfx Blink
 endmacro
 
 macro reset_buttons
@@ -256,6 +256,7 @@ endmacro
 
 macro present_localmenu_confirm
 sfx Confirm
+disable_court_record_button
 delflag menu_local
 {ANIM_LOCALMENU_PRESENT_STARTUP}
 joinvar _localmenu $_localmenu_back _present
@@ -276,6 +277,7 @@ endmacro
 
 macro talk_localmenu_confirm
 sfx Confirm
+disable_court_record_button
 delflag menu_local
 {ANIM_LOCALMENU_TALK_STARTUP}
 joinvar _localmenu $_localmenu_back _talk
@@ -295,6 +297,7 @@ endmacro
 
 macro move_localmenu_confirm
 sfx Confirm
+disable_court_record_button
 delflag menu_local
 {ANIM_LOCALMENU_MOVE_STARTUP}
 joinvar _localmenu $_localmenu_name _move
@@ -319,6 +322,7 @@ endmacro
 
 macro examine_localmenu_confirm
 sfx Confirm
+disable_court_record_button
 delflag menu_local
 {ANIM_LOCALMENU_EXAMINE_STARTUP}
 joinvar _localmenu $_localmenu_name _examine
@@ -352,6 +356,7 @@ set scrollon_bg_y 0
 set scrollon_bg_is_fg $fg
 
 disable_court_record_button
+hide_court_record_button
 isnot scrollon_bg_is_fg true?
 bg $1 stack name=backgroundexamine x=$scrollon_bg_x y=$scrollon_bg_y z=4 nowait
 is scrollon_bg_is_fg true?
@@ -390,7 +395,7 @@ pause 10 script
 fade start=100 end=0 speed=10 name=backgroundexamine nowait
 fade start=0 end=100 speed=10 name=guibg nowait
 pause 5 script
-set _cr_button true
+enable_court_record_button
 gui_flush
 delete name=backgroundexamine suppress
 delete name=darkexamine suppress

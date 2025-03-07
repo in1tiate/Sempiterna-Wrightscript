@@ -83,10 +83,10 @@ timer 32 _ANIM_SHOW_SEL
 endmacro
 
 macro _ANIM_HIDE_SEL
-fade name=ev_selector out speed=100
+fade name=ev_selector start=0 end=0 speed=100
 endmacro
 macro _ANIM_SHOW_SEL
-fade name=ev_selector in speed=100
+fade name=ev_selector start=100 end=100 speed=100
 endmacro
 
 macro ANIM_RECORD_SELECT_CURRENT
@@ -225,15 +225,6 @@ obj general/ui/record/borders_record_bot name=record_border2_in x=0 y=352 z=5
 flag record_noback?
 obj general/ui/record/borders_noback_bot name=record_border2_in x=0 y=352 z=5
 
-// inventory name banner
-joinvar acc1 general/ui/record/banner_ $inv_selected
-obj $acc1 name=banner_in x=0 y=202 z=0
-// switch inventory button
-{get_next_inventory dat1 $inv_selected}
-joinvar acc1 general/ui/record/ $dat1 _scrolloff
-isempty force_inventory?
-obj $acc1 name=switch_btn_in x=179 y=192 z=6
-
 // logic for figuring out which button should get highlighted
 flag presented?
 obj general/ui/record/present_high_scrolloff name=present_btn_in x=73 y=192 z=6
@@ -263,6 +254,16 @@ obj general/ui/record/nameplate name=nameplate_in x=25 y=228 z=0
 obj general/ui/record/button_left name=buttonleft_in x=0 y=248
 obj general/ui/record/button_right name=buttonright_in x=240 y=248
 {flush_record}
+
+// inventory name banner
+joinvar acc1 general/ui/record/banner_ $inv_selected
+obj $acc1 name=banner_in x=0 y=202 z=0
+// switch inventory button
+{get_next_inventory dat1 $inv_selected}
+joinvar acc1 general/ui/record/ $dat1 _scrolloff
+isempty force_inventory?
+obj $acc1 name=switch_btn_in x=179 y=192 z=6
+
 // scroll the ui out
 noflag record_noback?
 scroll name=back_btn_in y=32 speed=4 nowait

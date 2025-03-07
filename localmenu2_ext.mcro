@@ -56,8 +56,10 @@ set _bigbutton_bg bg/move
 # _moX_target - name of script this option should jump to
 # make sure these are set before calling
 setflag lmx_moveloop
+flag _from_record2 skipfadein$0
 obj bg/blackborderline name=tempbg y=192 z=4
 fade name=tempbg in speed=10
+label skipfadein$0
 obj bg/move name=movebg y=192 z=3
 obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=384 z=6
 scroll name=fback_btn y=-32 speed=4 nowait
@@ -118,6 +120,7 @@ delete name=fback_btn
 # First move option is always considered "selected" when setting up menu
 setvar _mo_selected $mo1_thumbpath-out
 bind_movemenu2
+enable_court_record_button
 endmacro
 
 # when the user hits "back"
@@ -344,8 +347,10 @@ setflag menu_talk
 # make sure these are set before calling
 set _bigbutton_bg $_bg_talk
 setflag lmx_talkloop
+flag _from_record2 skipfadein$0
 obj bg/blackborderline name=tempbg y=192 z=4
 fade name=tempbg in speed=10
+label skipfadein$0
 obj $_bg_talk name=talkbg y=192 z=0
 obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=384 z=6
 scroll name=fback_btn y=-32 speed=4 nowait
@@ -413,14 +418,16 @@ delete name=talkbg
 label _finish_talk
 {ANIM_LOCALMENU_TALK_MARKS}
 gui Button {exit_talk_menu} name=back_btn x=0 y=352 z=6 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
-display_minuku
+//display_minuku
 delete name=fback_btn
+enable_court_record_button
 bind_talkmenu2
 endmacro
 
 macro display_minuku
 obj general/brooch/brooch name=minuku_btn x=80 y=192 z=5
 gui Button {start_minuku} name=minuku_btn_dummy x=96 y=192 z=5 graphic=general/brooch/brooch_dummy hotkey=k_x
+enable_court_record_button
 endmacro
 
 macro start_minuku

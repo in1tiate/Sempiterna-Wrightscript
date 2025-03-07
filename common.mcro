@@ -1,5 +1,27 @@
 # common script macros
 
+// Timers!
+macro flashgui
+set _flashgui_current $1
+timer 4 flashgui_hide
+timer 8 flashgui_show
+timer 12 flashgui_hide
+timer 16 flashgui_show
+timer 20 flashgui_hide
+timer 24 flashgui_show
+timer 28 flashgui_hide
+timer 32 flashgui_show
+endmacro
+
+macro flashgui_hide
+fade name=$_flashgui_current start=0 end=0 speed=100
+endmacro
+
+macro flashgui_show
+fade name=$_flashgui_current start=100 end=100 speed=100
+endmacro
+
+
 macro doflash
 obj bg/white z=9 name=doflash
 timer 2 doflash_end

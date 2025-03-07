@@ -206,7 +206,11 @@ set _ch_ev_chr
 delflag _ch_ev_newchr
 delflag _ch_ev_fstchr
 scroll name=ev x=85 speed=10 nowait
-scroll name=ev_frame x=85 speed=10
+scroll name=ev_frame x=85 speed=10 nowait
+timer 10 ch_ev_del
+endmacro
+
+macro ch_ev_del
 delete name=ev suppress
 delete name=ev_frame suppress
 endmacro
@@ -282,7 +286,11 @@ set _ch_ev2_chr
 delflag _ch_ev2_newchr
 delflag _ch_ev2_fstchr
 scroll name=ev2 x=-85 speed=10 nowait
-scroll name=ev2_frame x=-85 speed=10
+scroll name=ev2_frame x=-85 speed=10 nowait
+timer 10 ch_ev_left_del
+endmacro
+
+macro ch_ev_left_del
 delete name=ev2 suppress
 delete name=ev2_frame suppress
 endmacro

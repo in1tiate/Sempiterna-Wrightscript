@@ -15,7 +15,7 @@ endmacro
 
 macro _default_court_record_button
 {_show_fake_cr_button}
-gui Button {_crbut} name=_crbut_ graphic=general/DS-PyWrightButtons/key_record graphichigh=general/DS-PyWrightButtons/key_record_high x=154 y=192 hotkey=k_tab z=6 try_bottom
+gui Button {_crbut} name=_crbut_ graphic=general/DS-PyWrightButtons/key_record x=154 y=192 hotkey=k_tab z=6 try_bottom
 endmacro
 
 macro _show_fake_cr_button
@@ -35,6 +35,7 @@ label exit
 endmacro
 
 macro hide_court_record_button
+{_hide_fake_cr_button}
 delete name=_crbut_ suppress
 endmacro
 
@@ -44,13 +45,34 @@ delete name=_crbut_ suppress
 endmacro
 
 macro enable_court_record_button
+is _cr_button exit
 set _cr_button true
+{_default_court_record_button}
+label exit
 endmacro
 
 macro _crbut
 isnot _cr_button exit
+sfx Scroll
 {r2_maskdelay}
 {clear_presentflags}
+flag menu_talk talkease$0
+flag menu_move moveease$0
+goto showrecord$0
+
+label talkease$0
+setflag _to_record2
+{ANIM_LOCALMENU_TALK_BACK}
+delflag _to_record2
+goto showrecord$0
+
+label moveease$0
+setflag _to_record2
+{ANIM_LOCALMENU_MOVE_BACK}
+delflag _to_record2
+goto showrecord$0
+
+label showrecord$0
 showrecord2
 delflag closerecord
 label exit

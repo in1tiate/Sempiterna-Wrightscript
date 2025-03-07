@@ -77,7 +77,6 @@ macro showrecord2
 delflag presented
 delflag closerecord
 {disable_saveload}
-sfx Scroll
 delete name=clickmask suppress
 obj fg/empty name=clickmask z=10
 isempty inv_selected?
@@ -126,9 +125,8 @@ pause 8
 delete name=tempbg
 goto r2_startfinish
 
-// Generic fade transition
+// Generic transition (not actually a fade)
 label r2_startfade
-{ANIM_RECORD_FADEOUT}
 set _bigbutton_img none
 getvar temp_bigbg2 _bigbutton_bg
 obj $temp_bigbg2 y=192 name=tempbg
@@ -167,6 +165,76 @@ set _textbox_show_button true
 {show_court_record_button}
 {record2_finish}
 {enable_saveload}
+endmacro
+
+// handle transitioning out of record2 scope
+macro record2_finish
+flag menu_move r2_handlemove
+flag menu_talk r2_handletalk
+flag menu_present r2_finishhandle
+flag menu_local r2_handlelocal fail=r2_handlenone
+
+label r2_handlemove
+setflag _from_record2
+{setup_move_menu}
+delflag _from_record2
+goto r2_finishhandle
+
+label r2_handletalk
+setflag _from_record2
+{setup_talk_menu}
+delflag _from_record2
+goto r2_finishhandle
+
+label r2_handlelocal
+{ANIM_LOCALMENU_STARTUP}
+{reset_buttons}
+goto r2_finishhandle
+
+// HYPER CURSED FAKE TEXT ADVANCE BUTTON
+// TODO: move this out of this macro
+label r2_handlenone
+obj fg/none z=10 name=clickmask
+obj $temp_bigbg y=192 z=1 name=fakebg
+obj $_bigbutton_comeback name=tempani y=192 z=5
+pause 15
+delete name=tempani
+// Reset real button's graphics
+set _bigbutton_bg $temp_bigbg
+{set_ui_theme $_bigbutton_theme}
+// Create fake text advance button
+joinvar pth1 general/ui $_bigbutton_theme /buttonpress
+joinvar pth2 $pth1 _high
+gui Button r2_hitbutton x=16 y=232 z=2 name=fakebigbutton graphic=$pth1 hotkey=enter_down
+obj general/arrow_big x=100 y=274 z=3 name=fakebigarrow
+// Extra fake invisible box over the arrow so it counts as a button
+gui Button r2_hitbutton x=100 y=274 z=3 name=fakefakebigarrow graphic=general/arrow_big_fake
+// Wait until one of the buttons gets pressed
+gui Wait
+// exit normally if a different button was pressed
+//{r2_maskdelay}
+goto r2_finishhandle
+label r2_hitbutton
+// Delete the fake button
+delete name=fakebigbutton
+delete name=fakebigarrow
+delete name=fakefakebigarrow
+delete name=clickmask
+// Play the text advance sound
+sfx bloop
+// Create a fake "pressed" button and display it for two frames
+obj $pth2 x=16 y=232 z=2 name=fakebigbutton
+pause 2
+delete name=fakebigbutton
+// Clear the fake background
+delete name=fakebg
+// Invisibly advance to the next text box
+"{sound none}{next}"
+// Continue execution normally
+goto r2_finishhandle
+
+label r2_finishhandle
+delete name=fakebg suppress
 endmacro
 
 // Stores the currently selected inventory's
@@ -385,72 +453,6 @@ is_ex _ev_selected == 2?
 evbutton2_select
 is_ex _ev_selected == 1?
 evbutton1_select
-endmacro
-
-// handle transitioning out of record2 scope
-macro record2_finish
-flag menu_move r2_handlemove
-flag menu_talk r2_handletalk
-flag menu_present r2_finishhandle
-flag menu_local r2_handlelocal fail=r2_handlenone
-
-label r2_handlemove
-{setup_move_menu}
-goto r2_finishhandle
-
-label r2_handletalk
-{setup_talk_menu}
-goto r2_finishhandle
-
-label r2_handlelocal
-{ANIM_LOCALMENU_STARTUP}
-{reset_buttons}
-goto r2_finishhandle
-
-// HYPER CURSED FAKE TEXT ADVANCE BUTTON
-// TODO: move this out of this macro
-label r2_handlenone
-obj fg/none z=10 name=clickmask
-obj $temp_bigbg y=192 z=1 name=fakebg
-obj $_bigbutton_comeback name=tempani y=192 z=5
-pause 15
-delete name=tempani
-// Reset real button's graphics
-set _bigbutton_bg $temp_bigbg
-{set_ui_theme $_bigbutton_theme}
-// Create fake text advance button
-joinvar pth1 general/ui $_bigbutton_theme /buttonpress
-joinvar pth2 $pth1 _high
-gui Button r2_hitbutton x=16 y=232 z=2 name=fakebigbutton graphic=$pth1 hotkey=enter_down
-obj general/arrow_big x=100 y=274 z=3 name=fakebigarrow
-// Extra fake invisible box over the arrow so it counts as a button
-gui Button r2_hitbutton x=100 y=274 z=3 name=fakefakebigarrow graphic=general/arrow_big_fake
-// Wait until one of the buttons gets pressed
-gui Wait
-// exit normally if a different button was pressed
-//{r2_maskdelay}
-goto r2_finishhandle
-label r2_hitbutton
-// Delete the fake button
-delete name=fakebigbutton
-delete name=fakebigarrow
-delete name=fakefakebigarrow
-delete name=clickmask
-// Play the text advance sound
-sfx bloop
-// Create a fake "pressed" button and display it for two frames
-obj $pth2 x=16 y=232 z=2 name=fakebigbutton
-pause 2
-delete name=fakebigbutton
-// Clear the fake background
-delete name=fakebg
-// Invisibly advance to the next text box
-"{sound none}{next}"
-// Continue execution normally
-goto r2_finishhandle
-
-label r2_finishhandle
-delete name=fakebg suppress
 endmacro
 
 // Completely flush all record-related objects
@@ -894,6 +896,7 @@ goto bigrecord_nointro
 {get_real_index $_ev_selected $current_page real_idx}
 {ANIM_BIGRECORD_OPEN}
 label bigrecord_nointro
+{unbind_record2}
 {ARRAY_GET_USED $inv_selected mat2}
 {get_real_index $_ev_selected $current_page real_idx}
 {flush_record_gfx}
@@ -1098,6 +1101,7 @@ endmacro
 // DO NOT USE FOR PROMPTS
 // Use showprompt2 for prompts
 macro showpresent2
+sfx Scroll
 delflag shoutmode
 set _present_shout
 set _present_char
@@ -1114,6 +1118,7 @@ goto $_selected fail=$_present_fail
 endmacro
 
 macro showprompt2
+sfx Scroll
 noflag prompt_locks?
 setflag record_noback
 setflag menu_present

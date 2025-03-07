@@ -145,6 +145,13 @@ delete name=tempbg
 endmacro
 
 macro ANIM_LOCALMENU_MOVE_BACK
+flag _to_record2?
+delete name=back_btn
+flag _to_record2?
+obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=352 z=6
+flag _to_record2?
+scroll name=fback_btn y=32 speed=5 nowait
+
 is_ex _move_opts > 3?
 delete name=mo4_btn suppress
 is_ex _move_opts > 3?
@@ -172,6 +179,7 @@ delete name=mo2_ani suppress
 pause 2
 delete name=mo1_ani suppress
 
+flag _to_record2 skipfadein$0
 obj bg/blackborderline name=borderline_temp y=192 z=6 
 fade name=borderline_temp in speed=10 nowait
 delete name=thumb
@@ -181,6 +189,17 @@ delete name=tmb_ani
 delete name=movebg
 fade name=borderline_temp out speed=10
 delete name=borderline_temp
+goto endmacro$0
+
+label skipfadein$0
+delete name=thumb
+obj $_mo_selected name=tmb_ani y=192 z=5
+pause 12
+delete name=tmb_ani
+delete name=back_btn
+delete name=movebg suppress
+
+label endmacro$0
 endmacro
 
 macro ANIM_LOCALMENU_MOVE_MO1_CONFIRM
@@ -554,6 +573,12 @@ set acc3
 endmacro
 
 macro ANIM_LOCALMENU_TALK_BACK
+flag _to_record2?
+delete name=back_btn
+flag _to_record2?
+obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=352 z=6
+flag _to_record2?
+scroll name=fback_btn y=32 speed=5 nowait
 {ANIM_LOCALMENU_TALK_CLEAR_MARKS}
 is_ex _talk_opts > 3?
 delete name=to4_btn suppress
@@ -582,6 +607,7 @@ delete name=to2_ani suppress
 pause 2
 delete name=to1_ani suppress
 
+flag _to_record2 skipfadein$0
 obj bg/blackborderline name=borderline_temp y=192 z=6 
 fade name=borderline_temp in speed=10 nowait
 pause 12
@@ -589,6 +615,14 @@ delete name=talkbg
 obj bg/main2 name=tempbg y=192 z=3
 fade name=borderline_temp out speed=10
 delete name=borderline_temp
+goto endmacro$0
+
+label skipfadein$0
+delete name=back_btn
+delete name=talkbg suppress
+pause 5
+
+label endmacro$0
 endmacro
 
 macro ANIM_LOCALMENU_TALK_TO1_CONFIRM

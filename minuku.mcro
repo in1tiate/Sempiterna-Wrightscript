@@ -79,6 +79,17 @@ setflag minuku_inrange
 //{minuku_debug_display}
 endmacro
 
+// this is genuinely so ridiculous and overengineered
+// okay. here's the problem. the cool spinning background either overlaps
+// with the perceive character, or the perceive character winds up on the top screen
+// since it's not possible to shrink or otherwise occulde the background,
+// we instead slice the character in 32 16px horizontal slices
+// and use annoying math to determine whether they are on the bottom screen or not (with about 18px of leeway).
+// we also have to do this for the background (which is mercifully made up of "only" 22 slices)
+// this is TREMENDOUSLY perf intensive. i've gotten it about as good as i can get it
+
+// Slow timer that handles occlusion for lower screen bg and char
+// Very intensive
 macro timed_update
 flag endupdate?
 goto finishupdate
@@ -95,33 +106,27 @@ goto endmacro
 label endmacro
 endmacro
 
-// this is genuinely so ridiculous and overengineered
-// okay. here's the problem. the cool spinning background either overlaps
-// with the perceive character, or the perceive character winds up on the top screen
-// since it's not possible to shrink or otherwise occulde the background,
-// we instead slice the character in 32 16px horizontal slices
-// and use annoying math to determine whether they are on the bottom screen or not (with about 18px of leeway).
-// we also have to do this for the background (which is mercifully made up of "only" 22 slices)
-// this is TREMENDOUSLY laggy. moving diagonally while this all runs slows the engine to a crawl
-
+// Create sliced character meta-object and position it
 macro setup_minuku_character_slices
-setvar slice_y 0
+setvar slice_y 64
 setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
 joinvar slice_path general/minuku/char/placeholder/default2/ $slice_current
-obj $slice_path y=$slice_y z=0 name=$slice_current
+obj $slice_path x=-128 y=$slice_y z=0 name=$slice_current
 addvar slice_y 16
 addvar slice_i 1
 is_ex slice_i < 33?
 goto slice_loop$0
 endmacro
 
+// Scroll sliced character meta-object
+// Note: For some reason, scrolling something at a very high speed works better than using nowait here
 macro scroll_minuku_character_slices
 setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
-scroll name=$slice_current x=$1 y=$2 speed=100000
+scroll name=$slice_current x=$1 y=$2 nowait
 addvar slice_i 1
 is_ex slice_i < 33?
 goto slice_loop$0
@@ -147,12 +152,12 @@ goto slice_loop$0
 endmacro
 
 macro setup_minuku_bg_slices
-setvar bgslice_y 0
+setvar bgslice_y 115
 setvar bgslice_i 1
 label slice_loop$0
 joinvar bgslice_current bgslice_ $bgslice_i
 joinvar bgslice_path bg/minukucrt/ $bgslice_current
-obj $bgslice_path y=$bgslice_y z=-1 name=$bgslice_current
+obj $bgslice_path x=-96 y=$bgslice_y z=-1 name=$bgslice_current
 addvar bgslice_y 16
 addvar bgslice_i 1
 is_ex bgslice_i < 23?
@@ -163,7 +168,7 @@ macro scroll_minuku_bg_slices
 setvar bgslice_i 1
 label slice_loop$0
 joinvar bgslice_current bgslice_ $bgslice_i
-scroll name=$bgslice_current x=$1 y=$2 speed=$3 speed=100000
+scroll name=$bgslice_current x=$1 y=$2 speed=$3 nowait
 addvar bgslice_i 1
 is_ex bgslice_i < 23?
 goto slice_loop$0
@@ -250,8 +255,8 @@ goto doscroll$0
 
 
 label doscroll$0
-{scroll_minuku_character_slices $scroll_x $scroll_y 4}
-{scroll_minuku_bg_slices $scroll_bg_x $scroll_bg_y 2}
+{scroll_minuku_character_slices $scroll_x $scroll_y 3}
+{scroll_minuku_bg_slices $scroll_bg_x $scroll_bg_y 1}
 
 label endtick$0
 delflag mi_hold_up
@@ -259,7 +264,7 @@ delflag mi_hold_down
 delflag mi_hold_left
 delflag mi_hold_right
 
-timer 2 minuku_movement_ticker
+timer 1 minuku_movement_ticker
 
 label finishticker$0
 delflag endticker
@@ -272,35 +277,35 @@ endmacro
 macro minuku_scroll_up
 is_ex minuku_cursor_position_y > 68 doscroll$0 fail=fail$0
 label doscroll$0
-set scroll_y 4
-set scroll_bg_y 2
+set scroll_y 3
+set scroll_bg_y 1
 label fail$0
 endmacro
 
 // Scroll down, if we can
 macro minuku_scroll_down
-is_ex minuku_cursor_position_y < 512 doscroll$0 fail=fail$0
+is_ex minuku_cursor_position_y < 511 doscroll$0 fail=fail$0
 label doscroll$0
-set scroll_y -4
-set scroll_bg_y -2
+set scroll_y -3
+set scroll_bg_y -1
 label fail$0
 endmacro
 
 // Scroll left, if we can
 macro minuku_scroll_left
-is_ex minuku_cursor_position_x > 0 doscroll$0 fail=fail$0
+is_ex minuku_cursor_position_x > 1 doscroll$0 fail=fail$0
 label doscroll$0
-set scroll_x 4
-set scroll_bg_x 2
+set scroll_x 3
+set scroll_bg_x 1
 label fail$0
 endmacro
 
 // Scroll right, if we can
 macro minuku_scroll_right
-is_ex minuku_cursor_position_x < 512 doscroll$0 fail=fail$0
+is_ex minuku_cursor_position_x < 511 doscroll$0 fail=fail$0
 label doscroll$0
-set scroll_x -4
-set scroll_bg_x -2
+set scroll_x -3
+set scroll_bg_x -1
 label fail$0
 endmacro
 
