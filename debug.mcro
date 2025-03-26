@@ -1,0 +1,11 @@
+macro DEBUG_OPEN_PANEL
+sfx Confirm
+obj general/ui/debug/mockup z=9 name=debugfade
+fade name=debugfade start=50 end=100 speed=50
+textblock 96 0 192 32 z=12 color=999 name=debug_funny Debugger? I hardly know 'er!
+gui Button DEBUG_SET_FLAG x=162 y=24 z=12 graphic=general/ui/debug/erasevar
+gui Input debug_var_to_mutate x=92 y=62 z=12 width=60
+gui Wait
+
+delete name=debugfade
+endmacro
