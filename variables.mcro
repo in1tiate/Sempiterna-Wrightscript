@@ -1,4 +1,6 @@
 // Called every time a save is loaded
+// FIXME: a bunch of stuff is still not 
+// correctly restored on saveload
 macro load_defaults
 
 flag msgwindow?
@@ -72,10 +74,18 @@ set _software_version 0.0.0
 {init_defaults}
 {init_court_record_settings}
 {set_ui_theme}
-set _bigbutton_bg $_bg_main
+set _bigbutton_bg bg/$_bg_main
 set _cr_button false
 
 #Defaults
+
+// at some point, nameplate settings broke
+// and pywright would render text nameplates
+// even when explicitly told not to
+// to get around this, we use an invisible font
+// and replace all the default text box assets with
+// transparency
+
 set _nt_text_y 1
 set _nt_y 116
 set _nt_middle_x 9
@@ -94,6 +104,11 @@ set _blinkspeed_global 0 0
 # initialize courtroom variables
 set _sscroll_courtroom jfe
 init_sscroll
+
+// this arcane command is the only way to get
+// pywright to assign a space character to a variable
+// thank you to saluk for figuring it out for me
+set __const_space $_ $_
 
 endmacro
 
@@ -128,6 +143,7 @@ set c_plock {c o}{center}{spd3}{sound/nothing}
 
 endmacro
 
+// aka woman macro
 macro init_char_metadata
 set char_abels_defsound blipfemale
 set char_athenaco_defsound blipfemale
@@ -140,15 +156,32 @@ set char_trucy_defsound blipfemale
 set char_trucyco_defsound blipfemale
 endmacro
 
+// call with no arguments to use default ui
+// this should only really be used to alter surface level ui
 macro set_ui_theme
 set _bigbutton_theme $1
+// buttons
 joinvar _bigbutton_img general/ui $_bigbutton_theme /buttonpress
 joinvar _bigbutton_cross general/ui $_bigbutton_theme /cross_exam_buttons
 joinvar _bigbutton_comeback general/ui $_bigbutton_theme /button-comeback-ani
 joinvar _bigbutton_leave general/ui $_bigbutton_theme /button-leave-ani
-joinvar _bg_main bg/main2 $_bigbutton_theme
-joinvar _bg_talk bg/talk $_bigbutton_theme
-joinvar _bg_move bg/move $_bigbutton_theme
+
+// ui backdrops
+joinvar _bg_main bg/ui $_bigbutton_theme /main
+joinvar _bg_mainlines bg/ui $_bigbutton_theme /mainlines
+joinvar _bg_talk bg/ui $_bigbutton_theme /talk
+joinvar _bg_move bg/ui $_bigbutton_theme /move
+
+// ui backdrops sans bg folder
+// some old (read: bad) code relies on
+// automatic bg clearing
+// TODO: fix all of it to use the above variable instead
+joinvar _bglegacy_main ui $_bigbutton_theme /main
+joinvar _bglegacy_mainlines ui $_bigbutton_theme /mainlines
+joinvar _bglegacy_talk ui $_bigbutton_theme /talk
+joinvar _bglegacy_move ui $_bigbutton_theme /move
+
+set _bigbutton_bg $_bg_main
 endmacro
 
 macro reset_skiptext

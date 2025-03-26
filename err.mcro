@@ -1,3 +1,5 @@
+// convenient error ui builder
+
 macro THROW_ERROR
 set err_lower $1
 set err_y 0

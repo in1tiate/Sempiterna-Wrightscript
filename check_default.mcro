@@ -1,3 +1,5 @@
+// just here to facilitate error handling
+
 macro check_default
 delete name=topscreenmask
 delete name=darkenfg

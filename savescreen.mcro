@@ -11,7 +11,7 @@ pause 60
 obj bg/bigblack z=9 name=dramafadeobj fade
 mus
 pause 20
-set _bigbutton_bg bg/main
+set _bigbutton_bg $_bg_main
 bg mainbig
 fade name=dramafadeobj start=100 end=0 speed=3
 sfx jingle

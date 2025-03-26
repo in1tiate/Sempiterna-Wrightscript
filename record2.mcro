@@ -1,3 +1,9 @@
+// RECORD2.MCRO
+// by in1tiate
+// court record..... 2!!!!!
+// depends: inventory.mcro, stl.mcro, math.mcro, probably something else also
+// this took me months to engineer
+
 // Clear present-specific flags
 // so they don't affect the inventory screen
 macro clear_presentflags
@@ -404,14 +410,14 @@ is inv_to_check evidence?
 set $1 profiles
 
 // No spells
-//is inv_to_check profiles?
-//set $1 evidence
+is inv_to_check profiles?
+set $1 evidence
 
 // Spells
-is inv_to_check profiles?
-set $1 spells
-is inv_to_check spells?
-set $1 evidence
+//is inv_to_check profiles?
+//set $1 spells
+//is inv_to_check spells?
+//set $1 evidence
 endmacro
 
 // Corrects the currently selected item index
@@ -604,6 +610,8 @@ delete name=ev_nameplate suppress
 isempty current_page?
 set current_page 1
 {ARRAY_GET_USED $inv_selected acc1}
+is_ex acc1 < 1?
+goto endmacro$0
 is_ex acc1 <= 8?
 goto evi_layout_loop
 
@@ -616,6 +624,7 @@ goto evi_layout_begin
 
 label evi_layout_begin
 {ITERATE 1 $acc1 evi_layout_loop}
+label endmacro$0
 endmacro
 
 // Get the number of filled slots on
@@ -974,6 +983,8 @@ goto bigrecord_check_finish
 label handle_newcheck
 obj general/DS-PyWrightButtons/key_check name=checkbtn_in x=154 y=384 z=6
 scroll name=checkbtn_in y=-32 speed=4
+// workaround for weird inconsistent bug
+pause 1
 delete name=checkbtn_in
 goto handle_keepcheck
 

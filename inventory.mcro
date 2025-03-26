@@ -2,6 +2,8 @@
 ### by in1tiate
 ### Aims to replace the in-built evidence system
 
+// FIXME: record2 doesn't cleanly handle inventories without manual reconfig
+
 macro initialize_inventories
 // Surely six pages is enough.
 ARRAY_CREATE evidence 48

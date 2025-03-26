@@ -1,3 +1,5 @@
+// unfinished perceive macros
+
 macro ANIM_MINUKU_START_1
 bg black stack fade
 obj general/minuku/minuku_startup name=minuku_startup x=0 y=192 z=4
@@ -112,7 +114,7 @@ setvar slice_y 64
 setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
-joinvar slice_path general/minuku/char/placeholder/default2/ $slice_current
+joinvar slice_path general/minuku/char/placeholder/normal(active)/ $slice_current
 obj $slice_path x=-128 y=$slice_y z=0 name=$slice_current
 addvar slice_y 16
 addvar slice_i 1
@@ -126,13 +128,17 @@ macro scroll_minuku_character_slices
 setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
-scroll name=$slice_current x=$1 y=$2 nowait
+scroll name=$slice_current x=$1 y=$2 speed=$3
 addvar slice_i 1
 is_ex slice_i < 33?
 goto slice_loop$0
 endmacro
 
 macro update_minuku_character_slices
+// don't do anything if we haven't moved since last time
+is last_minuku_cursor $minuku_cursor_position_y?
+goto endmacro$0
+
 
 setvar slice_i 1
 label slice_loop$0
@@ -149,6 +155,8 @@ addvar slice_i 1
 is_ex slice_i < 33?
 goto slice_loop$0
 
+label endmacro$0
+set last_minuku_cursor $minuku_cursor_position_y
 endmacro
 
 macro setup_minuku_bg_slices
@@ -168,13 +176,16 @@ macro scroll_minuku_bg_slices
 setvar bgslice_i 1
 label slice_loop$0
 joinvar bgslice_current bgslice_ $bgslice_i
-scroll name=$bgslice_current x=$1 y=$2 speed=$3 nowait
+scroll name=$bgslice_current x=$1 y=$2 speed=$3
 addvar bgslice_i 1
 is_ex bgslice_i < 23?
 goto slice_loop$0
 endmacro
 
 macro update_minuku_bg_slices
+// don't do anything if we haven't moved since last time
+is last_bg_cursor $minuku_bg_position_y?
+goto endmacro$0
 
 setvar bgslice_i 1
 label slice_loop$0
@@ -191,6 +202,8 @@ addvar bgslice_i 1
 is_ex bgslice_i < 23?
 goto slice_loop$0
 
+label endmacro$0
+set last_bg_cursor $minuku_bg_position_y
 endmacro
 
 // Limits how often movements can be commanded

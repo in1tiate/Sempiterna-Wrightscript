@@ -411,7 +411,7 @@ macro gui_flush
 delete name=delaymasker suppress
 {gui_flush_buttons}
 clear bottom
-bg main2 y=192 stack z=-5 name=guibg
+bg $_bglegacy_main y=192 stack z=-5 name=guibg
 delete name=penalty suppress
 delete name=darkexamine suppress
 endmacro

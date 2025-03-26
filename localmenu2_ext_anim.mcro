@@ -612,7 +612,7 @@ obj bg/blackborderline name=borderline_temp y=192 z=6
 fade name=borderline_temp in speed=10 nowait
 pause 12
 delete name=talkbg
-obj bg/main2 name=tempbg y=192 z=3
+obj $_bg_main name=tempbg y=192 z=3
 fade name=borderline_temp out speed=10
 delete name=borderline_temp
 goto endmacro$0

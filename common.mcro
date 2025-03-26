@@ -13,6 +13,30 @@ timer 28 flashgui_hide
 timer 32 flashgui_show
 endmacro
 
+macro flashgui_slow
+set _flashgui_current $1
+timer 8 flashgui_hide
+timer 16 flashgui_show
+timer 24 flashgui_hide
+timer 32 flashgui_show
+timer 40 flashgui_hide
+timer 48 flashgui_show
+timer 56 flashgui_hide
+timer 64 flashgui_show
+endmacro
+
+macro flashgui_slower
+set _flashgui_current $1
+timer 16 flashgui_hide
+timer 32 flashgui_show
+timer 48 flashgui_hide
+timer 64 flashgui_show
+timer 80 flashgui_hide
+timer 96 flashgui_show
+timer 112 flashgui_hide
+timer 128 flashgui_show
+endmacro
+
 macro flashgui_hide
 fade name=$_flashgui_current start=0 end=0 speed=100
 endmacro
@@ -131,7 +155,7 @@ bg $zoom_side
 char $2 e=zoom
 endmacro
 
-
+// cute animation for getting an accolade
 macro give_accolade
 setvar accolade_id $1
 joinvar accolade_path ev/40/ $1
@@ -151,6 +175,8 @@ set_accolade_master $accolade_id
 obj general/accolades/accolade_anim x=256 y=0 z=8 name=accolade_anim
 obj $accolade_path x=258 y=2 z=7 name=accolade_icon
 obj $accolade_namepath x=301 y=20 z=8 name=accolade_name
+// fun fact: this is actually the sfx that plays when you win a forensics minigame in aa4
+// ... who the hell am I talking to?
 sfx accolade
 scroll name=accolade_icon x=-145 speed=10 nowait
 scroll name=accolade_name x=-145 speed=10 nowait

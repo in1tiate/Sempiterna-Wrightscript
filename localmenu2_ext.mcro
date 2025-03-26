@@ -48,7 +48,7 @@ endmacro
 macro setup_move_menu
 delete name=delaymasker suppress
 setflag menu_move
-set _bigbutton_bg bg/move
+set _bigbutton_bg $_bg_move
 # variables:
 # _move_opts - set to number of move options, maximum is 4
 # _moX_art - X is number in list, set to filename of background
@@ -135,7 +135,7 @@ delete name=back_btn
 reset_move_buttons
 {ANIM_LOCALMENU_MOVE_BACK}
 delflag lmx_moveloop
-set _bigbutton_bg bg/main2
+set _bigbutton_bg $_bg_main
 unbind_movemenu2
 endmacro
 
@@ -156,7 +156,7 @@ delete name=scriptfader
 bg bigblack z=100
 {clear_localmenu2_ext_vars}
 {unbind_movemenu2}
-set _bigbutton_bg bg/main2
+set _bigbutton_bg $_bg_main
 endmacro
 
 macro reset_move_buttons
@@ -470,7 +470,7 @@ reset_talk_buttons
 pause 4
 delete name=back_btn
 delflag lmx_talkloop
-set _bigbutton_bg bg/main2
+set _bigbutton_bg $_bg_main
 unbind_talkmenu2
 endmacro
 

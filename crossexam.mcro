@@ -43,7 +43,7 @@ endmacro
 
 macro resume_crossui
 _hide_fake_cr_button
-obj bg/main2 z=5 name=tempbg y=192
+obj $_bg_main z=5 name=tempbg y=192
 delete name=fbutton_record suppress
 obj general/ui/record_scrolloff name=record_scrolloff y=192 z=6 x=154
 obj $_bigbutton_leave name=tempani y=0 z=5
@@ -70,7 +70,7 @@ macro remove_crossui
 delete name=penalty suppress
 delete name=fbutton_press
 obj general/DS-PyWrightButtons/key_press_high name=fbutton_press y=192 z=6
-obj bg/main2 z=5 name=tempbg y=192
+obj $_bg_main z=5 name=tempbg y=192
 obj general/ui/cebutton1 name=ebutton1 x=0 y=257 z=5
 obj general/ui/cebutton2 name=ebutton2 x=150 y=257 z=5
 scroll name=ebutton1 x=-106 speed=10 nowait

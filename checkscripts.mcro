@@ -1,3 +1,5 @@
+// Macros for handling Check functionality in RECORD2
+
 macro checkscript
 set _checkmacro $1
 screenshot art/bg/topscreenmask width=256 height=192 x=0 y=0 rwidth=256 rheight=192
