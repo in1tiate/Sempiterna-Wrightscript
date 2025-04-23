@@ -27,3 +27,28 @@ delete name=errblock4
 scroll name=errbg y=-96 speed=16
 delete name=errbg
 endmacro
+
+macro PRINT_DEBUG
+set err_lower $1
+set err_y 0
+isnotempty err_lower?
+set err_y 192
+exportvars errlog.dat _err _err_long
+obj bg/black y=-192 name=errbg z=4
+scroll name=errbg y=96 speed=16
+set _font_block nds12.ttf
+set _font_block_size 10
+addvar err_y 16
+textblock 4 $err_y 248 16 color=$color_r name=errblock Debug information:
+addvar err_y 16
+textblock 4 $err_y 248 32 color=$color_r name=errblock2 $_err
+addvar err_y 16
+textblock 4 $err_y 248 16 color=$color_w name=errblock4 Press ENTER to continue...
+waitenter
+delete name=errblock
+delete name=errblock2
+delete name=errblock3
+delete name=errblock4
+scroll name=errbg y=-96 speed=16
+delete name=errbg
+endmacro

@@ -195,6 +195,7 @@ goto r2_finishhandle
 label r2_handlelocal
 {ANIM_LOCALMENU_STARTUP}
 {reset_buttons}
+{bind_localmenu2}
 goto r2_finishhandle
 
 // HYPER CURSED FAKE TEXT ADVANCE BUTTON
@@ -563,7 +564,17 @@ obj general/ui/record/arrow_right name=record_arrowright_gfx x=243 y=290 z=5
 gui Button {record_pageright} name=record_arrowright_btn x=243 y=290 z=5 graphic=general/ui/record/arrowdummy
 
 setflag nosound
+flag pagewrap pagewrap$0 fail=nowrap$0
+
+label pagewrap$0
+{pagewrap left}
+goto end$0
+
+label nowrap$0
 {evbutton1_select}
+
+label end$0
+delflag pagewrap
 {bind_record2}
 endmacro
 
@@ -595,8 +606,44 @@ obj general/ui/record/arrow_right name=record_arrowright_gfx x=243 y=290 z=5
 gui Button {record_pageright} name=record_arrowright_btn x=243 y=290 z=5 graphic=general/ui/record/arrowdummy
 
 setflag nosound
+flag pagewrap pagewrap$0 fail=nowrap$0
+
+label pagewrap$0
+{pagewrap right}
+goto end$0
+
+label nowrap$0
 {evbutton1_select}
+
+label end$0
+delflag pagewrap
 {bind_record2}
+endmacro
+
+// handles wrapping evidence indicies
+macro pagewrap
+{get_count_from_page dat1}
+set _pagewrap_direction $1
+
+is _pagewrap_direction right pagewrap_right$0 fail=pagewrap_left$0
+
+label pagewrap_right$0
+is_ex (_ev_selected == 4) OR (_ev_selected == 8 AND dat1 < 5)?
+set _ev_selected 1
+is_ex _ev_selected == 8?
+set _ev_selected 5
+goto endmacro$0
+
+label pagewrap_left$0
+is_ex _ev_selected == 1 AND dat1 > 3?
+set _ev_selected 4
+is_ex _ev_selected == 5 AND dat1 == 8?
+set _ev_selected 8
+is_ex (_ev_selected == 5 AND dat1 < 8) OR (_ev_selected == 1 AND dat1 < 4)?
+set _ev_selected $dat1
+
+label endmacro$0
+{select_current_ev}
 endmacro
 
 // Delete all extant item buttons
@@ -687,12 +734,15 @@ endmacro
 macro r2_updownkey
 {get_count_from_page dat1}
 setvar dat2 $_ev_selected
+# is it on the top row
 is_ex dat2 < 5?
 addvar _ev_selected 4
+# is it on the bottom row
 is_ex dat2 > 4?
 subvar _ev_selected 4
+# woops, can't move there, so just reset
 is_ex _ev_selected > dat1?
-setvar _ev_selected $dat1
+setvar _ev_selected $dat2
 {select_current_ev}
 endmacro
 
@@ -704,22 +754,22 @@ is_ex max_pages == 1?
 goto r2left_onepage
 
 subvar _ev_selected 1
-is_ex dat2 == 1?
+
+is_ex dat2 == 1 OR dat2 == 5 r2left_first fail=r2left_end
+
+label r2left_first
+addvar _ev_selected 1
+setflag pagewrap
 record_pageleft
-is_ex dat2 == 1?
-setflag nosound
-is_ex dat2 == 5?
-record_pageleft
-is_ex dat2 == 5?
 setflag nosound
 goto r2left_end
 
 label r2left_onepage
 subvar _ev_selected 1
 is_ex dat2 == 1?
-setvar _ev_selected == 4
+setvar _ev_selected 4
 is_ex dat2 == 5?
-setvar _ev_selected == 8
+setvar _ev_selected 8
 
 goto r2left_end
 
@@ -736,30 +786,31 @@ is_ex max_pages == 1?
 goto r2right_onepage
 
 addvar _ev_selected 1
-is_ex dat2 == dat1?
-record_pageright
-is_ex dat2 == dat1?
-setflag nosound
-is_ex dat2 == dat1?
-set _ev_selected 1
-is_ex dat2 == dat1?
+
+is_ex dat2 == 4 OR dat2 == 8 r2right_rowlast
+is_ex dat2 == dat1 r2right_last
 goto r2right_end
-is_ex dat2 == 4?
+
+label r2right_last
+set _ev_selected 1
+setflag pagewrap
 record_pageright
-is_ex dat2 == 4?
 setflag nosound
-is_ex dat2 == 8?
+goto r2right_end
+
+label r2right_rowlast
+subvar _ev_selected 1
+setflag pagewrap
 record_pageright
-is_ex dat2 == 8?
 setflag nosound
 goto r2right_end
 
 label r2right_onepage
 addvar _ev_selected 1
 is_ex dat2 == 4?
-setvar _ev_selected == 1
+setvar _ev_selected 1
 is_ex dat2 == 8?
-setvar _ev_selected == 5
+setvar _ev_selected 5
 
 goto r2right_end
 

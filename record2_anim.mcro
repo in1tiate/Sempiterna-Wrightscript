@@ -390,7 +390,6 @@ label fevi2_layout_loop
 isempty _ITER?
 goto fevi2_layout_begin
 {_ANIM_RECORD_CREATE_FAKE_EVI_BUTTON_PAGE}
-
 label fevi2_layout_begin
 {ITERATE 1 $new1 fevi2_layout_loop}
 
@@ -428,6 +427,7 @@ scroll name=f_evbutton7 x=$page_modifier speed=10 nowait
 is_ex new1 > 7?
 scroll name=f_evbutton8 x=$page_modifier speed=10 nowait
 scroll name=f_evbutton1 x=$page_modifier speed=10
+pause 1
 delete name=grid_page
 delete name=grid
 obj general/ui/record/grid name=grid x=24 y=248 z=0
@@ -711,7 +711,10 @@ pause 15
 delete name=tempani
 {set_ui_theme $_bigbutton_theme}
 delete name=fakebg
-"{sound none}{next}"
+
+joinvar pth1 general/ui $_bigbutton_theme /buttonpress
+obj $pth1 x=16 y=232 z=2 name=button-easein
+//"{sound none}{next}"
 endmacro
 
 // PRESENT EVIDENCE (DETAIL VIEW)
@@ -845,7 +848,11 @@ pause 15
 delete name=tempani
 {set_ui_theme $_bigbutton_theme}
 delete name=fakebg
-"{sound none}{next}"
+
+joinvar pth1 general/ui $_bigbutton_theme /buttonpress
+obj $pth1 x=16 y=232 z=2 name=button-easein
+
+//"{sound none}{next}"
 endmacro
 
 macro _ANIM_CALCULATE_XY_SCROLL_OFFSET
