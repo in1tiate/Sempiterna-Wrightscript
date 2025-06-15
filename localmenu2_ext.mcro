@@ -418,6 +418,7 @@ delete name=talkbg
 label _finish_talk
 {ANIM_LOCALMENU_TALK_MARKS}
 gui Button {exit_talk_menu} name=back_btn x=0 y=352 z=6 graphic=general/DS-PyWrightButtons/key_borderless_back hotkey=k_space
+//minuku
 //display_minuku
 delete name=fback_btn
 enable_court_record_button

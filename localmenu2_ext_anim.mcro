@@ -440,6 +440,8 @@ is _to2_mark check?
 obj general/checkmark name=to2_mark x=1 y=$acc4 z=6
 is _to2_mark lock?
 obj general/checkmark_lock name=to2_mark x=0 y=$acc4 z=6
+is _to2_mark eye?
+obj general/checkmark_eye name=to2_mark x=0 y=$acc4 z=6
 is_ex _talk_opts > 2?
 goto _do_mark_3
 goto _finish_marks

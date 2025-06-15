@@ -38,11 +38,11 @@ timer 128 flashgui_show
 endmacro
 
 macro flashgui_hide
-fade name=$_flashgui_current start=0 end=0 speed=100
+fade name=$_flashgui_current start=1 end=0 speed=100
 endmacro
 
 macro flashgui_show
-fade name=$_flashgui_current start=100 end=100 speed=100
+fade name=$_flashgui_current start=99 end=100 speed=100
 endmacro
 
 

@@ -24,7 +24,10 @@ endmacro
 macro spinbg
 flag stopspin?
 goto finishspin$0
+is magnifi_heir odoroki?
 rotate degrees=360 speed=1 name=minukuspin nowait
+is magnifi_heir minuki?
+rotate degrees=-360 speed=1 name=minukuspin nowait
 timer 360 spinbg
 goto endmacro$0
 
@@ -37,15 +40,15 @@ endmacro
 macro bind_minuku
 
 // cardinals
-gui Button {minuku_leftkey} x=0 y=256 hold name=minuku_btn_left graphic=general/ui/minuku/button_minuku_left hotkey=k_left
-gui Button {minuku_rightkey} x=160 y=256 hold name=minuku_btn_right graphic=general/ui/minuku/button_minuku_right hotkey=k_right
-gui Button {minuku_upkey} x=96 y=192 hold name=minuku_btn_up graphic=general/ui/minuku/button_minuku_up hotkey=k_up
-gui Button {minuku_downkey} x=96 y=300 hold name=minuku_btn_down graphic=general/ui/minuku/button_minuku_down hotkey=k_down
+gui Button {minuku_leftkey} x=0 y=256 hold name=minuku_btn_left graphic=general/ui/minuku/button_minuku_left_dbg hotkey=k_left
+gui Button {minuku_rightkey} x=160 y=256 hold name=minuku_btn_right graphic=general/ui/minuku/button_minuku_right_dbg hotkey=k_right
+gui Button {minuku_upkey} x=96 y=192 hold name=minuku_btn_up graphic=general/ui/minuku/button_minuku_up_dbg hotkey=k_up
+gui Button {minuku_downkey} x=96 y=300 hold name=minuku_btn_down graphic=general/ui/minuku/button_minuku_down_dbg hotkey=k_down
 // ordinals
-gui Button {minuku_upleft} x=0 y=192 hold name=minuku_btn_upleft graphic=general/ui/minuku/button_minuku_upleft
-gui Button {minuku_upright} x=160 y=192 hold name=minuku_btn_upright graphic=general/ui/minuku/button_minuku_upright
-gui Button {minuku_downleft} x=0 y=300 hold name=minuku_btn_downleft graphic=general/ui/minuku/button_minuku_downleft
-gui Button {minuku_downright} x=160 y=300 hold name=minuku_btn_downright graphic=general/ui/minuku/button_minuku_downright
+gui Button {minuku_upleft} x=0 y=192 hold name=minuku_btn_upleft graphic=general/ui/minuku/button_minuku_upleft_dbg
+gui Button {minuku_upright} x=160 y=192 hold name=minuku_btn_upright graphic=general/ui/minuku/button_minuku_upright_dbg
+gui Button {minuku_downleft} x=0 y=300 hold name=minuku_btn_downleft graphic=general/ui/minuku/button_minuku_downleft_dbg
+gui Button {minuku_downright} x=160 y=300 hold name=minuku_btn_downright graphic=general/ui/minuku/button_minuku_downright_dbg
 
 endmacro
 
@@ -128,7 +131,7 @@ macro scroll_minuku_character_slices
 setvar slice_i 1
 label slice_loop$0
 joinvar slice_current slice_ $slice_i
-scroll name=$slice_current x=$1 y=$2 speed=$3
+scroll name=$slice_current x=$1 y=$2 nowait
 addvar slice_i 1
 is_ex slice_i < 33?
 goto slice_loop$0
@@ -176,7 +179,7 @@ macro scroll_minuku_bg_slices
 setvar bgslice_i 1
 label slice_loop$0
 joinvar bgslice_current bgslice_ $bgslice_i
-scroll name=$bgslice_current x=$1 y=$2 speed=$3
+scroll name=$bgslice_current x=$1 y=$2 nowait
 addvar bgslice_i 1
 is_ex bgslice_i < 23?
 goto slice_loop$0
@@ -456,7 +459,7 @@ is shake_framecounter 4?
 set shake_framecounter 0
 
 // call again in 2 frames
-timer 2 shake_obj
+//timer 2 shake_obj
 goto endmacro
 
 label finishshake

@@ -70,7 +70,6 @@ endmacro
 {clear_present_flags}
 
 macro init_game_defaults
-set _software_version 0.0.0
 {init_defaults}
 {init_court_record_settings}
 {set_ui_theme}
@@ -137,7 +136,7 @@ set color_b 6BC6F7
 set color_g 00F700
 set color_o F77339
 set color_r F70039
-set color_w FFFFFF
+set color_w FFFFFF {c g}
 set ctype {type}{center}{c g}{spd2}
 set c_plock {c o}{center}{spd3}{sound/nothing}
 
