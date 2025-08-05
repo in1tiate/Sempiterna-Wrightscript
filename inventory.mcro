@@ -8,55 +8,54 @@ macro initialize_inventories
 // Surely six pages is enough.
 ARRAY_CREATE evidence 48
 ARRAY_CREATE profiles 48
-ARRAY_CREATE spells 48
+//ARRAY_CREATE spells 48
+//ARRAY_CREATE 8balls 48
+//ARRAY_CREATE trucies 48
+
+// Helps genericize the rest of the code
+// if we register them here
+// Register them in the order they should appear
+// in the inventory menu
+ARRAY_CREATE inventories 6
+ARRAY_APPEND inventories evidence
+ARRAY_APPEND inventories profiles
+//ARRAY_APPEND inventories spells
+//ARRAY_APPEND inventories 8balls
+//ARRAY_APPEND inventories trucies
 {update_inventory_pages}
 endmacro
 
 macro update_inventory_pages
-set ev_pages 1
-set pr_pages 1
-set sp_pages 1
+{ARRAY_GET_USED inventories i_mat2}
 
-{ARRAY_GET_USED evidence i_mat2}
+// iterate over each inventory
+label loopstart$0
+isempty _ITER?
+goto begin$0
 
-is_ex i_mat2 > 8?
-set ev_pages 2
-is_ex i_mat2 > 16?
-set ev_pages 3
-is_ex i_mat2 > 24?
-set ev_pages 4
-is_ex i_mat2 > 32?
-set ev_pages 5
-is_ex i_mat2 > 40?
-set ev_pages 6
+// get inventory name
+{ARRAY_GET_ITEM_BY_IDX inventories $_ITER i_dat1}
+// and pages variable
+joinvar i_pagevar $i_dat1 _pages
+set $i_pagevar 1
 
-{ARRAY_GET_USED profiles i_mat2}
+// get filled slots
+{ARRAY_GET_USED $i_dat1 i_mat3}
+// get filled pages
+intdiv $i_mat3 8
+set $i_pagevar $_quotient
+// extra partially filled page
+is_ex _remainder > 0?
+addvar $i_pagevar 1
 
-is_ex i_mat2 > 8?
-set pr_pages 2
-is_ex i_mat2 > 16?
-set pr_pages 3
-is_ex i_mat2 > 24?
-set pr_pages 4
-is_ex i_mat2 > 32?
-set pr_pages 5
-is_ex i_mat2 > 40?
-set pr_pages 6
+label begin$0
+{ITERATE 1 $i_mat2 loopstart$0}
 
-{ARRAY_GET_USED spells i_mat2}
-
-is_ex i_mat2 > 8?
-set sp_pages 2
-is_ex i_mat2 > 16?
-set sp_pages 3
-is_ex i_mat2 > 24?
-set sp_pages 4
-is_ex i_mat2 > 32?
-set sp_pages 5
-is_ex i_mat2 > 40?
-set sp_pages 6
-
+// clear temp variables
 set i_mat2 
+set i_mat3
+set i_dat1
+set i_pagevar
 endmacro
 
 macro add_item

@@ -135,6 +135,32 @@ pause 2 script
 set _music_fade 0
 endmacro
 
+macro music_fade_out_slow
+set _music_fade 100
+set _mf_short_interval 30
+set _mf_long_interval 60
+timer 30 __music_fade_out
+endmacro
+
+macro __music_fade_out
+flag mfadedone?
+goto endmacro$0
+
+is_ex _music_fade <= 50 and _music_fade > 0?
+timer $_mf_short_interval __music_fade_out
+is_ex _music_fade > 50?
+timer $_mf_long_interval __music_fade_out
+
+subvar _music_fade 10
+is_ex _music_fade == 0?
+setflag mfadedone
+label endmacro$0
+endmacro
+
+macro setmusicfade
+set _music_fade $1
+endmacro
+
 macro music_fade_in_fast
 set _music_fade 0
 pause 5 script

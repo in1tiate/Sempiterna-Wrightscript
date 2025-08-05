@@ -558,7 +558,7 @@ obj $nmppath name=ev_bignameplate_in x=352 y=232 z=2
 {ARRAY_GET_ITEM_PROP_BY_IDX $inv_selected $real_idx data acc2}
 joinvar datapath ev/data/ $acc2
 flag bigrecord_left?
-obj $datapath name=ev_bigdata_in x=-160 y=248 z=2
+obj $datapath name=ev_bigdata_in x=-164 y=248 z=2
 noflag bigrecord_left?
 obj $datapath name=ev_bigdata_in x=348 y=248 z=2
 
@@ -574,9 +574,9 @@ scroll name=bigplate_bg speed=10 x=$bigrecord_offset nowait
 scroll name=bigplate_borders speed=10 x=$bigrecord_offset nowait
 scroll name=ev_bigicon speed=10 x=$bigrecord_offset nowait
 scroll name=ev_bignameplate speed=10 x=$bigrecord_offset nowait
-scroll name=ev_bigdata speed=10 x=$bigrecord_offset
-// workaround for some kind of fucked up bug
-pause 1
+scroll name=ev_bigdata speed=10 x=$bigrecord_offset nowait
+// 25.6
+pause 26
 delete name=bigplate_in
 delete name=bigplate_bg_in
 delete name=bigplate_borders_in
@@ -971,16 +971,14 @@ scroll name=descplate y=-50 speed=10
 delete name=descplate
 delete name=bigplate
 
-scroll name=ev_bignameplate x=32 speed=32 nowait
+//scroll name=ev_bignameplate x=32 speed=32 nowait
 obj general/ui/record/nameplate_shrink x=89 y=230 name=nameplate z=5
 
 scroll name=bigplate_bg x=256 speed=36 nowait
 scroll name=evframe_big x=256 speed=36 nowait
 scroll name=ev_bigicon x=256 speed=36 nowait
-scroll name=nameplate y=-2 speed=1 nowait
-scroll name=ev_bignameplate y=-2 speed=1 nowait
-scroll name=nameplate x=-64 speed=8 nowait
-scroll name=ev_bignameplate x=-64 speed=8 nowait
+scroll name=ev_bignameplate x=-32 y=-2 speed=8 nowait
+scroll name=nameplate y=-2 x=-64 speed=8 nowait
 scroll name=bigplate_borders x=256 speed=36 nowait
 pause 8
 delete name=evframe_big

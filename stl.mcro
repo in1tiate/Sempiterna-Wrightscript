@@ -9,7 +9,10 @@
 //////// ITEMS ////////
 // we put the "Item" in "Object-Oriented Programming"
 // Items are implicitly created when you set one of their properties
+// Items are GLOBAL to current memory scope!
+// Best practice is to use prefixes to avoid clobbering unrelated data
 
+// usage: ITEM_SET_PROP <item> <property> <value>
 macro ITEM_SET_PROP
 joinvar __ITM_NAME ITEM_ $1
 joinvar __ITM_PROP $__ITM_NAME _PROP_
@@ -17,6 +20,8 @@ joinvar __ITM_PROP $__ITM_PROP $2
 set $__ITM_PROP $3
 endmacro
 
+// usage: ITEM_SET_PROP_FROM_VAR <item> <property> <var>
+// probably unnecessary but it's nice to have
 macro ITEM_SET_PROP_FROM_VAR
 joinvar __ITM_NAME ITEM_ $1
 joinvar __ITM_PROP $__ITM_NAME _PROP_
@@ -27,6 +32,7 @@ joinvar __ITM_PROP $__ITM_PROP $2
 set $__ITM_PROP $acc2
 endmacro
 
+// usage: ITEM_GET_PROP <item> <property> <resultvar>
 macro ITEM_GET_PROP
 joinvar __ITM_NAME ITEM_ $1
 joinvar __ITM_PROP $__ITM_NAME _PROP_
@@ -37,14 +43,20 @@ endmacro
 //////// ARRAYS ////////
 // make lists of your things
 // Arrays are ordered lists of references to items
+// !!! INDICES START AT 1 !!!
 // Supports append/insert/delete
 // The items you add to the array do not have to exist when you add them
 
 
 // Allocate a new array
-// Size is fixed. Making larger arrays takes more script time
+// Size is fixed. Allocating larger arrays takes more script time
 // Try to only make them as big as you actually need
+
 // Creating an array that already exists will effectively overwrite it
+// but if the new array is smaller, the old data will still exist outside
+// the array bounds until it is overwritten or explicitly deleted.
+
+// TODO: Should probably be possible to actually delete an array lol
 // Syntax: ARRAY_CREATE {name} {size}
 macro ARRAY_CREATE
 joinvar __ARY_NAME ARRAY_ $1 _
@@ -75,6 +87,14 @@ joinvar __ARY_SIZE $__ARY_NAME SIZE
 getvar L_ARY_SIZE $__ARY_SIZE
 joinvar __ARY_USED $__ARY_NAME USED
 getvar L_ARY_USED $__ARY_USED
+
+isempty L_ARY_SIZE?
+goto throw_error2$0 
+goto continue2$0
+label throw_error2$0
+set _err Fatal error: Tried to append item ( $2 ) to array ( $1 ) but array was not initialized!
+THROW_ERROR
+label continue2$0
 
 is_ex L_ARY_USED >= L_ARY_SIZE throw_error$0 fail=continue1$0
 label throw_error$0
@@ -160,27 +180,27 @@ joinvar __ARY_NAME ARRAY_ $1 _
 joinvar __ARY_SIZE $__ARY_NAME SIZE
 getvar L_ARY_SIZE $__ARY_SIZE
 
-label ary_iterator_start
+label ary_iterator_start$0
 isempty _ITER?
-goto ary_iterator_first
+goto ary_iterator_first$0
 
 {ARRAY_GET_ITEM_BY_IDX $1 $_ITER _ITM}
 set _ITM_CHECK $2
 is_ex _ITM == _ITM_CHECK?
-goto ary_itm_found
+goto ary_itm_found$0
 
-label ary_iterator_first
-{ITERATE 1 $L_ARY_SIZE ary_iterator_start}
+label ary_iterator_first$0
+{ITERATE 1 $L_ARY_SIZE ary_iterator_start$0}
 set $3 -1
-goto ary_getidx_fin
+goto ary_getidx_fin$0
 
-label ary_itm_found
+label ary_itm_found$0
 set $3 $_ITER
 delflag _ITERATOR_DONE
 set _ITER
 set _ITER_RANGE
 
-label ary_getidx_fin
+label ary_getidx_fin$0
 endmacro
 
 // Get item from array by index

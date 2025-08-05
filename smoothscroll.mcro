@@ -299,46 +299,47 @@ endmacro
 
 ### SIDE MACRO
 macro side
-goto $1
+joinvar sidelabel $1 $0
+goto $sidelabel
 
-label def
+label def$0
 bg $sscroll_defbg
 fg $sscroll_deffg
 char $2 e=$3
-goto side_end
+goto side_end$0
 
-label pro
+label pro$0
 bg $sscroll_probg
 fg $sscroll_profg
 char $2 e=$3
-goto side_end
+goto side_end$0
 
-label wit
+label wit$0
 bg $sscroll_witbg
 fg $sscroll_witfg
 char $2 e=$3
-goto side_end
+goto side_end$0
 
-label jud
+label jud$0
 bg $sscroll_judbg
 char $2 e=$3
-goto side_end
+goto side_end$0
 
-label hlp
+label hlp$0
 bg $sscroll_hlpbg
 char $2 e=$3
-goto side_end
+goto side_end$0
 
-label side_end
+label side_end$0
 flag msgwindow?
-goto handle_window
-goto skip_window
+goto handle_window$0
+goto skip_window$0
 
 // Re-display the message window if we need to
-label handle_window
+label handle_window$0
 isnotempty _var_nt?
-nti $_var_nt
+{nti $_var_nt}
 isempty _var_nt?
-nti_clear
-label skip_window
+{nti_clear}
+label skip_window$0
 endmacro

@@ -60,7 +60,7 @@ flag _from_record2 skipfadein$0
 obj bg/blackborderline name=tempbg y=192 z=4
 fade name=tempbg in speed=10
 label skipfadein$0
-obj bg/move name=movebg y=192 z=3
+obj $_bg_move name=movebg y=192 z=3
 obj general/DS-PyWrightButtons/key_borderless_back name=fback_btn y=384 z=6
 scroll name=fback_btn y=-32 speed=4 nowait
 is_ex _move_opts == 1?

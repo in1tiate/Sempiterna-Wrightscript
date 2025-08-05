@@ -2,6 +2,497 @@ macro crossexam
 setflag crossexam_active
 endmacro
 
+// add_statement <name> <evidence number> <visible flag>
+macro add_statement
+{ITEM_SET_PROP $1 evidence_num $2}
+{ITEM_SET_PROP $1 visibility_flag $3}
+{ARRAY_APPEND testimony $1}
+endmacro
+// add_statement_evidence <name> <evidence idx> <evidence>
+macro add_statement_evidence
+joinvar prop evidence $2
+{ITEM_SET_PROP $1 $prop $3}
+endmacro
+
+// SETUP CROSSEXAM FUNCTIONAL BUTTONS
+macro setup_cross_buttons
+setflag crossexam_menu
+setflag menu_crossexam
+obj $_bg_main y=192 z=0 name=crossbg
+
+is_ex _current_statement > 1?
+gui Button {st_buttonprev} x=16 y=257 z=6 graphic=$_bigbutton_cross1 name=buttonprev hotkey=k_left
+is_ex _current_statement > 1?
+gui Button {st_buttonprev} x=28 y=282 z=7 graphic=general/arrow_big_fake name=bigarrowbtnprev
+is_ex _current_statement == 1?
+obj $_bigbutton_cross1 x=16 y=257 z=7 name=buttonprev
+
+gui Button {st_buttonnext} x=133 y=257 z=6 graphic=$_bigbutton_cross2 name=buttonnext hotkey=k_right
+gui Button {st_buttonnext} x=163 y=282 z=7 graphic=general/arrow_big_fake name=bigarrowbtnnext hotkey=enter_down
+
+gui Button {st_press} x=0 y=192 z=6 graphic=general/DS-PyWrightButtons/key_press name=buttonpress hotkey=k_z
+gui Button {st_present} y=192 x=164 z=6 graphic=general/DS-PyWrightButtons/key_present name=buttonpresent hotkey=k_x
+
+is_ex _current_statement > 1?
+gui Button {st_buttonprev} x=0 y=0 z=9 graphic=hs_dummy name=topscreen_prev
+gui Button {st_buttonnext} x=128 y=0 z=9 graphic=hs_dummy name=topscreen_next
+endmacro
+
+// DELETE ALL CROSSEXAM UI
+macro flush_cross_buttons
+delflag crossexam_menu
+delflag menu_crossexam
+delete name=crossbg
+delete name=buttonprev
+delete name=bigarrowprev
+delete name=bigarrowbtnprev
+delete name=buttonnext
+delete name=bigarrownext
+delete name=bigarrowbtnnext
+delete name=topscreen_prev
+delete name=topscreen_next
+delete name=buttonpress
+delete name=buttonpresent
+delete name=fbutton_press
+delete name=fbutton_present
+endmacro
+
+// REMOVE TEXTBOX ARROWS
+macro delete_tb_arrows
+set _textbox_x
+delete name=prev_arrow
+delete name=jfe_prev_arrow
+delete name=jfe_next_arrow
+endmacro
+
+// NEXT BUTTON
+macro st_buttonnext
+// Flush the text box
+"{sound none}{next}"
+{flush_cross_buttons}
+obj $_bg_main y=192 z=0 name=crossbg
+obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+obj $_bigbutton_cross1 x=16 y=257 z=7 name=buttonprev
+joinvar high $_bigbutton_cross2 _high
+obj $high x=133 y=257 z=7 name=buttonnext
+sfx Confirm
+{st_next}
+flag afterlast nop$0
+is _jfe_modded true?
+set _textbox_x 8
+pause 5
+{flush_cross_buttons}
+{setup_cross_buttons}
+label nop$0
+delflag afterlast
+endmacro
+
+// PREV BUTTON
+macro st_buttonprev
+// Flush the text box
+"{sound none}{next}"
+{flush_cross_buttons}
+obj $_bg_main y=192 z=0 name=crossbg
+obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+obj $_bigbutton_cross2 x=133 y=257 z=7 name=buttonnext
+joinvar high $_bigbutton_cross1 _high
+obj $high x=16 y=257 z=7 name=buttonprev
+sfx Confirm
+{st_prev}
+is _jfe_modded true?
+set _textbox_x 8
+pause 5
+{flush_cross_buttons}
+{setup_cross_buttons}
+endmacro
+
+// set next command to press
+macro st_press
+joinvar next_command st $_current_statement _press
+endmacro
+// set next command to present
+macro st_present
+set next_command st_present
+endmacro
+
+// start statement
+macro st_init
+{delete_tb_arrows}
+set _textbox_skipupdate true
+set _textbox_show_button false
+set _jfe_hide_tb_arrows true
+set _current_statement $1
+{update_crossexam_indicator}
+set next_command
+endmacro
+
+// leave statement
+macro st_exit
+delete name=bigarrownext
+delete name=bigarrowprev
+is _jfe_modded true?
+set _textbox_x 8
+endmacro
+
+// start press
+macro press_init
+{flush_cross_buttons}
+{delete_tb_arrows}
+{remove_crossexam_indicator}
+"{sound none}{next}"
+set _textbox_skipupdate false
+set _textbox_show_button true
+set _jfe_hide_tb_arrows false
+{ANIM_CROSSEXAM_PRESS phoenix}
+{enable_court_record_button}
+endmacro
+
+// handles fade in/out after press
+macro handle_pressfade
+flag pressfade?
+fade name=fadeobj out speed=10
+delete name=fadeobj
+delflag pressfade
+endmacro
+
+// start present
+macro present_init
+{flush_cross_buttons}
+setflag menu_crossexam
+setflag presentmode
+set _present_shout objection
+set _present_char $_current_protagonist
+sfx Scroll
+{record_crossui}
+{showrecord2}
+delflag presentmode
+delflag menu_crossexam
+{disable_court_record_button}
+{flush_record}
+noflag presented?
+goto nopresent
+goto yespresent
+
+label nopresent
+{resume_record_crossui}
+set _textbox_show_button false
+set _textbox_skipupdate true
+{setup_cross_buttons}
+setflag stfast
+joinvar returnpresent st $_current_statement
+goto $returnpresent
+
+label yespresent
+delflag presented
+set _textbox_show_button true
+set _textbox_skipupdate false
+set _jfe_hide_tb_arrows false
+{enable_court_record_button}
+noflag badcontra?
+music none fade=none
+noflag badcontra?
+joinvar goodpresent st $_current_statement _ $_selected
+noflag badcontra?
+goto $goodpresent
+// implicitly bad contra
+{enable_court_record_button}
+goto badpresent
+
+endmacro
+// end bad present (or any present)
+macro badpresent_exit
+{msgwindow_hide}
+{resume_crossui}
+set _textbox_show_button false
+set _textbox_skipupdate true
+{setup_cross_buttons}
+joinvar returnpresent st $_current_statement
+goto $returnpresent
+endmacro
+
+
+// end press
+macro press_exit
+{msgwindow_hide}
+setflag statement_done
+{ARRAY_GET_SIZE testimony t_fsize}
+is_ex _current_statement == t_fsize?
+set next_command st_afterlast
+obj bg/black name=fadeobj z=7
+fade name=fadeobj in speed=10
+setflag pressfade
+is_ex _current_statement == t_fsize endmacro$0
+{st_next}
+set _textbox_skipupdate true
+{disable_court_record_button}
+{resume_crossui}
+{setup_cross_buttons}
+label endmacro$0
+goto $next_command
+endmacro
+
+
+// GOTO NEXT STATEMENT
+macro st_next
+noflag statement_done?
+setflag stfast
+noflag statement_done?
+joinvar next_command st $_current_statement
+noflag statement_done?
+goto endmacro$0
+
+{ARRAY_GET_USED testimony t_size}
+// loop thru until we find a visible label or DIE TRYING
+label loopstart$0
+addvar _current_statement 1
+is_ex _current_statement > t_size?
+st_wraplast
+is_ex _current_statement > t_size nop$0
+{ARRAY_GET_ITEM_PROP_BY_IDX testimony $_current_statement visibility_flag flagresult}
+is flagresult NONE?
+goto endmacro$0
+getvar flagresult2 $flagresult
+isempty flagresult2?
+goto loopstart$0
+goto endmacro$0
+
+label endmacro$0
+{ARRAY_GET_ITEM_BY_IDX testimony $_current_statement next_command}
+set _textbox_show_button false
+label nop$0
+endmacro
+
+// WRAPLAST
+// HANDLE AFTERLAST
+macro st_wraplast
+"{sound none}{next}"
+{msgwindow_hide}
+{flush_cross_buttons}
+{delete_tb_arrows}
+{remove_crossexam_indicator}
+set _textbox_skipupdate false
+set _textbox_show_button true
+set next_command st_afterlast
+setflag crossui_neutral
+{remove_crossui}
+{flush_cross_buttons}
+setflag afterlast
+endmacro
+
+// GOTO PREVIOUS STATEMENT
+macro st_prev
+noflag statement_done?
+setflag stfast
+noflag statement_done?
+joinvar next_command st $_current_statement
+noflag statement_done?
+goto endmacro$0
+// loop thru until we find a visible label or DIE TRYING
+label loopstart$0
+subvar _current_statement 1
+is_ex _current_statement < 1?
+set _current_statement 1
+{ARRAY_GET_ITEM_PROP_BY_IDX testimony $_current_statement visibility_flag flagresult}
+is flagresult NONE?
+goto endmacro$0
+getvar flagresult2 $flagresult
+isempty flagresult2?
+goto loopstart$0
+goto endmacro$0
+
+label endmacro$0
+{ARRAY_GET_ITEM_BY_IDX testimony $_current_statement next_command}
+set _textbox_show_button false
+label nop$0
+endmacro
+
+// RUN AT END OF TESTIMONY STATEMENTS
+macro st_end
+setflag statement_done
+is_ex _current_statement > 1?
+obj general/arrow_big x=28 y=282 z=6 flipx name=bigarrowprev
+obj general/arrow_big x=163 y=282 z=6 name=bigarrownext
+
+// Can't use labels in something called from a textbox
+set jfe_mod 1
+isnot _jfe_modded true?
+set jfe_mod 0
+
+is jfe_mod 1?
+set _jfe_hide_tb_arrows true
+is_ex _current_statement > 1 AND jfe_mod == 1?
+obj general/ce_pointer x=0 y=152 z=5 name=jfe_prev_arrow flipx
+is jfe_mod 1?
+obj general/ce_pointer x=240 y=152 z=5 name=jfe_next_arrow
+
+is_ex _current_statement > 1 AND jfe_mod == 0?
+obj general/ui-pointer x=1 y=176 z=5 name=prev_arrow flipx
+endmacro
+
+// GET VISIBLE STATEMENTS
+// gets the total amount of visible statements
+// usage: get_visible_statements <result_var>
+macro get_visible_statements
+{ARRAY_GET_USED testimony t_size}
+set t_visible 0
+// loop over statements and count visible ones
+label loopstart$0
+isempty _ITER?
+goto begin$0
+{ARRAY_GET_ITEM_PROP_BY_IDX testimony $_ITER visibility_flag flagresult}
+// visflag NONE == always visible
+is flagresult NONE?
+addvar t_visible 1
+// visflag exists, so check if it's set
+getvar flagresult2 $flagresult
+// visflag not set, statement not visible
+isempty flagresult2?
+goto begin$0
+addvar t_visible 1
+
+label begin$0
+{ITERATE 1 $t_size loopstart$0}
+set $1 $t_visible
+endmacro
+
+// GET VISIBLE INDEX OF TESTIMONY
+// usage: get_visible_index <absolute_index> <result_var>
+macro get_visible_index
+{ARRAY_GET_USED testimony t_size}
+is_ex t_visible == t_size?
+set tv_index $1
+is_ex t_visible == t_size?
+goto endmacro$0
+
+// store original index
+// and copy for doing math on
+set og_index $1
+set tv_index $1
+
+// loop thru statements up to the one we're checking
+label loopstart$0
+isempty _ITER?
+goto begin$0
+
+{ARRAY_GET_ITEM_PROP_BY_IDX testimony $_ITER visibility_flag flagresult}
+// visflag NONE == always visible
+is flagresult NONE?
+goto begin$0
+// visflag exists, so check if it's set
+getvar flagresult2 $flagresult
+// visflag not set, statement not visible
+// so the visible index goes down one
+isempty flagresult2?
+subvar tv_index 1
+// ITERATE is inclusive and we don't want that
+// so we step over it here
+is_ex _ITER == og_index?
+goto endmacro$0
+
+label begin$0
+{ITERATE 1 $og_index loopstart$0}
+
+label endmacro$0
+set $2 $tv_index
+endmacro
+
+// UPDATE TESTIMONY INDICATORS
+// usage: {update_testimony_indicator}
+macro update_crossexam_indicator
+remove_crossexam_indicator
+
+{get_visible_statements t_visible}
+// starting position for rightmost indicator
+set ind_x 245
+set ind_y 116
+// index for looping backward from
+set ind_idx $t_visible
+// tells the macro that deletes the indicators how many to delete
+set _ind_loaded $t_visible
+
+// loop backwards from the number of visible statements
+// to create an indicator for every statement
+label loopstart$0
+joinvar ind_id ind_ $ind_idx
+// move left 10px each time
+is_ex ind_idx < t_visible?
+subvar ind_x 10
+set ind_gfx general/ui/st_indicator
+// special graphic for current statement
+{get_visible_index $_current_statement adjusted_statement}
+is_ex ind_idx == adjusted_statement?
+set ind_gfx general/ui/st_current
+obj $ind_gfx name=$ind_id x=$ind_x y=$ind_y z=4
+// exit when reaching last (first) icon
+is_ex ind_idx == 1?
+goto endmacro$0
+subvar ind_idx 1
+goto loopstart$0
+label endmacro$0
+endmacro
+
+// REMOVE TESTIMONY INDICATORS
+// usage: {remove_crossexam_indicator}
+macro remove_crossexam_indicator
+// don't delete zero indicators
+isempty _ind_loaded endmacro$0
+is _ind_loaded 0 endmacro$0
+
+// loop thru and delete loaded indicators
+label loopstart$0
+isempty _ITER?
+goto begin$0
+joinvar ind_id ind_ $_ITER
+delete name=$ind_id
+
+label begin$0
+{ITERATE 1 $_ind_loaded loopstart$0}
+set _ind_loaded 0
+label endmacro$0
+endmacro
+
+macro load_testimony
+
+endmacro
+
+macro check_evidence
+setflag badcontra
+{ITEM_GET_PROP $1 evidence_num dat9}
+is_ex dat9 == 0?
+setflag badcontra
+is_ex dat9 == 0?
+goto endmacro$0
+is_ex dat9 == 1?
+goto justone$0
+goto multiev$0
+
+label justone$0
+{ITEM_GET_PROP $1 evidence1 dat8}
+is_ex _selected == dat8?
+delflag badcontra
+goto endmacro$0
+
+label multiev$0
+label loopstart$0
+isempty _ITER?
+goto begin$0
+
+joinvar dat7 evidence $_ITER
+{ITEM_GET_PROP $1 $dat7 dat8}
+is_ex _selected == dat8?
+delflag badcontra
+is_ex _selected == dat8?
+goto endmacro$0
+
+label begin$0
+{ITERATE 1 $dat9 loopstart$0}
+
+label endmacro$0
+endmacro
+
+
 
 
 ### BELOW IS THE OLD STUFF
@@ -15,6 +506,27 @@ delete name=press_scrollon
 delete name=present_scrollon
 obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
 obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+endmacro
+
+macro init_crossui
+obj $_bg_main z=5 name=tempbg y=192
+obj $_bigbutton_leave name=tempani y=0 z=5
+pause 13
+delete name=tempani
+obj $_bigbutton_cross1 name=ebutton1 x=-106 y=257  z=5
+obj $_bigbutton_cross2 name=ebutton2 x=256 y=257  z=5
+scroll name=ebutton1 x=124 speed=10 nowait
+scroll name=ebutton2 x=-124 speed=10 nowait
+obj general/ui/press_scrollon name=press_scrollon y=192 z=6
+obj general/ui/present_scrollon name=present_scrollon y=192 x=164 z=6
+pause 16
+delete name=press_scrollon
+delete name=present_scrollon
+delete name=ebutton1
+delete name=ebutton2
+//obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+//obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+//obj $_bigbutton_cross name=fbutton_ce y=257 x=16 z=6
 endmacro
 
 macro clear_crossui
@@ -43,6 +555,7 @@ endmacro
 
 macro resume_crossui
 _hide_fake_cr_button
+{disable_court_record_button}
 obj $_bg_main z=5 name=tempbg y=192
 delete name=fbutton_record suppress
 obj general/ui/record_scrolloff name=record_scrolloff y=192 z=6 x=154
@@ -50,35 +563,41 @@ obj $_bigbutton_leave name=tempani y=0 z=5
 pause 13
 delete name=record_scrolloff
 delete name=tempani
-obj general/ui/cebutton1 name=ebutton1 x=-106 y=257  z=5
-obj general/ui/cebutton2 name=ebutton2 x=256 y=257  z=5
-scroll name=ebutton1 x=126 speed=10 nowait
-scroll name=ebutton2 x=-126 speed=10 nowait
+obj $_bigbutton_cross1 name=ebutton1 x=-106 y=257  z=5
+obj $_bigbutton_cross2 name=ebutton2 x=256 y=257  z=5
+scroll name=ebutton1 x=124 speed=10 nowait
+scroll name=ebutton2 x=-124 speed=10 nowait
 obj general/ui/press_scrollon name=press_scrollon y=192 z=6
 obj general/ui/present_scrollon name=present_scrollon y=192 x=164 z=6
-pause 18
+pause 16
 delete name=press_scrollon
 delete name=present_scrollon
 delete name=ebutton1
 delete name=ebutton2
-obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
-obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
-obj general/cross_exam_buttons name=fbutton_ce y=257 x=16 z=6
+//obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+//obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+//obj $_bigbutton_cross name=fbutton_ce y=257 x=16 z=6
 endmacro
 
 macro remove_crossui
 delete name=penalty suppress
 delete name=fbutton_press
+noflag crossui_neutral?
 obj general/DS-PyWrightButtons/key_press_high name=fbutton_press y=192 z=6
+flag crossui_neutral?
+obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
 obj $_bg_main z=5 name=tempbg y=192
-obj general/ui/cebutton1 name=ebutton1 x=0 y=257 z=5
-obj general/ui/cebutton2 name=ebutton2 x=150 y=257 z=5
+obj $_bigbutton_cross1 name=ebutton1 x=0 y=257 z=5
+obj $_bigbutton_cross2 name=ebutton2 x=150 y=257 z=5
 scroll name=ebutton1 x=-106 speed=10 nowait
 scroll name=ebutton2 x=106 speed=10 nowait
 
 delete name=fbutton_press suppress
 delete name=fbutton_present suppress
+noflag crossui_neutral?
 obj general/ui/press_high_scrolloff name=press_scrolloff y=192 z=6
+flag crossui_neutral?
+obj general/ui/press_scrolloff name=press_scrolloff y=192 z=6
 obj general/ui/present_scrolloff name=present_scrolloff y=192 x=164 z=6
 pause 14
 obj general/ui/record_scrollon y=192 x=154 z=6 name=record_scrollon
@@ -93,9 +612,54 @@ delete name=press_scrolloff
 delete name=present_scrolloff
 _show_fake_cr_button
 delete name=record_scrollon
+delflag crossui_neutral
+endmacro
+
+macro record_crossui
+delete name=penalty suppress
+delete name=fbutton_press
+obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+obj $_bg_main z=5 name=tempbg y=192
+obj $_bigbutton_cross1 name=ebutton1 x=0 y=257 z=5
+obj $_bigbutton_cross2 name=ebutton2 x=150 y=257 z=5
+scroll name=ebutton1 x=-106 speed=10 nowait
+scroll name=ebutton2 x=106 speed=10 nowait
+
+delete name=fbutton_press suppress
+delete name=fbutton_present suppress
+obj general/ui/press_scrolloff name=press_scrolloff y=192 z=6
+obj general/ui/present_high_scrolloff name=present_scrolloff y=192 x=164 z=6
+pause 14
+delete name=tempbg
+delete name=ebutton1
+delete name=ebutton2
+delete name=press_scrolloff
+delete name=present_scrolloff
+endmacro
+
+macro resume_record_crossui
+//obj $_bg_main z=5 name=tempbg y=192
+_hide_fake_cr_button
+delete name=fbutton_record suppress
+obj $_bigbutton_cross1 name=ebutton1 x=-106 y=257  z=5
+obj $_bigbutton_cross2 name=ebutton2 x=256 y=257  z=5
+scroll name=ebutton1 x=124 speed=10 nowait
+scroll name=ebutton2 x=-124 speed=10 nowait
+obj general/ui/press_scrollon name=press_scrollon y=192 z=6
+obj general/ui/present_scrollon name=present_scrollon y=192 x=164 z=6
+pause 16
+delete name=press_scrollon
+delete name=present_scrollon
+delete name=ebutton1
+delete name=ebutton2
+//obj general/DS-PyWrightButtons/key_press name=fbutton_press y=192 z=6
+//obj general/DS-PyWrightButtons/key_present name=fbutton_present y=192 x=164 z=6
+//obj $_bigbutton_cross name=fbutton_ce y=257 x=16 z=6
 endmacro
 
 macro st_strt
 delete name=tempbg
 delete name=fbutton_ce
+delete name=button-easein suppress
+delflag statement_done
 endmacro

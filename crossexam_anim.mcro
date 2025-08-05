@@ -11,7 +11,7 @@ joinvar _vs_def general/vs/ $1
 joinvar _vs_pro general/vs/ $2
 obj general/vs/slice name=slicedef y=219 z=7
 obj general/vs/slice name=slicepro y=296 z=7
-pause 3
+pause 2
 obj $_vs_def name=vsdef y=219 z=7 x=-155
 obj $_vs_pro name=vspro flipx y=296 z=7 x=155
 scroll name=vsdef x=15 speed=15 nowait
@@ -97,8 +97,8 @@ delete name=penalty suppress
 delete name=fbutton_press
 obj general/DS-PyWrightButtons/key_press_high name=fbutton_press y=192 z=6
 obj $_bg_main z=5 name=tempbg y=192
-obj general/ui/cebutton1 name=ebutton1 x=0 y=257 z=5
-obj general/ui/cebutton2 name=ebutton2 x=150 y=257 z=5
+obj $_bigbutton_cross1 name=ebutton1 x=0 y=257 z=5
+obj $_bigbutton_cross2 name=ebutton2 x=150 y=257 z=5
 scroll name=ebutton1 x=-106 speed=10 nowait
 scroll name=ebutton2 x=106 speed=10 nowait
 
@@ -113,7 +113,9 @@ joinvar shout_sfx $shout_src holdit
 setvar shout_gfx general/shouts/holdit
 isempty shout_char ?
 setvar shout_sfx objection
-msgwindow_hide
+{msgwindow_hide}
+{delete_tb_arrows}
+{remove_crossexam_indicator}
 obj $shout_gfx z=9 name=interject
 sfx $shout_sfx
 pause 2
@@ -136,9 +138,15 @@ delete name=ebutton2
 delete name=press_scrolloff
 delete name=present_scrolloff
 
+pause 10
+#Background
+bg $sscroll_witbg
+
 #Characters
-char $_sscroll_defense e=$_sscroll_def_e name=dc x=-540 stack noauto
-char $_sscroll_witness e=$_sscroll_wit_e name=wc x=0 stack noauto
+char $sscroll_def e=normal name=dc x=-540 stack noauto
+controlanim name=dc pause
+char $sscroll_wit e=$sscroll_wit_e name=wc x=0 stack noauto
+controlanim name=wc pause
 
 #Tables
 fg $sscroll_deffg x=-540 name=db
@@ -151,17 +159,16 @@ scroll name=wb x=280 speed=$sscroll_speed_wshort nowait
 scroll name=dc x=540 speed=$sscroll_speed_wlong nowait
 scroll name=db x=540 speed=$sscroll_speed_wlong nowait
 
-# start scrolling the screen left
-joinvar dat1 $sscroll_prefix wit2def
-bg $dat1 stack
-set dat1
+#Background
+joinvar sscroll_bg $sscroll_prefix wit2def
+bg $sscroll_bg stack
 
-#Go away animation
-pause 30
+#Cleanup
+pause 32
 delete name=wb
 bg $sscroll_defbg
 fg $sscroll_deffg
-char $_sscroll_defense e=$_sscroll_def_e
+char $sscroll_def e=normal
 
 pause 10
 noflag no_msgwindow_slide?
@@ -174,10 +181,10 @@ endmacro
 ### usage: ANIM_CROSSEXAM_PRESENT [character]
 ### MAKE SURE YOU RUN init_sscroll AT LEAST ONCE FIRST
 macro ANIM_CROSSEXAM_PRESENT
-# cleanup stray ui
-# shouldn't be needed w/ later court record opening animation ~innovations~
-delete name=fbutton_press suppress
-delete name=fbutton_present suppress
+# Start the ball rolling on getting the buttons outta here
+obj general/ui/record/present_high_scrolloff name=present_btn_in x=73 y=192 z=9
+obj general/DS-PyWrightButtons/key_borderless_back name=back_btn_in x=0 y=352 z=9
+scroll name=back_btn_in y=32 speed=4 nowait
 # First, do the dramatic shout and lower screen closeup
 joinvar dramachar general/closeup/ $1
 obj bg/white name=flash z=7 y=192
@@ -191,11 +198,20 @@ shake 25 25 nowait
 #if the wrong present flag isn't set, stop the music
 noflag badcontra?
 mus
+{delete_tb_arrows}
+{remove_crossexam_indicator}
 {shoutdrama objection $1}
+delete name=present_btn_in
+delete name=back_btn_in
+pause 10
+#Background
+bg $sscroll_witbg
 
 #Characters
-char $_meta_def e=$_meta_d-e name=dc x=-540 stack noauto
-char $_meta_wit e=$_meta_w-e name=wc x=0 stack noauto
+char $sscroll_def e=point name=dc x=-540 stack noauto
+controlanim name=dc pause
+char $sscroll_wit e=$sscroll_wit_e name=wc x=0 stack noauto
+controlanim name=wc pause
 
 #Tables
 fg $sscroll_deffg x=-540 name=db
@@ -208,10 +224,9 @@ scroll name=wb x=280 speed=$sscroll_speed_wshort nowait
 scroll name=dc x=540 speed=$sscroll_speed_wlong nowait
 scroll name=db x=540 speed=$sscroll_speed_wlong nowait
 
-# start scrolling the screen left
-joinvar dat1 $sscroll_prefix wit2def
-bg $dat1 stack
-set dat1
+#Background
+joinvar sscroll_bg $sscroll_prefix wit2def
+bg $sscroll_bg stack
 
 #Cleanup
 obj bg/black z=5 y=192 name=dramafadeobj
@@ -228,11 +243,11 @@ pause 8
 delete name=tempbg
 delete name=tempani
 delete name=borders
-pause 9
+pause 14
 delete name=wb
 bg $sscroll_defbg
 fg $sscroll_deffg
-char $_meta_def e=$_meta_d-e
+char $sscroll_def e=point
 
 pause 10
 {msgwindow_slideup}

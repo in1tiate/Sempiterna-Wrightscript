@@ -94,10 +94,13 @@ set inv_selected $force_inventory
 {disable_court_record_button}
 {gui_flush}
 {r2_wipemask}
+flag menu_crossexam?
+goto sp1$0
 flag presentmode?
 obj general/ui/record_scrolloff name=record_scrolloff x=154 y=192 z=6
 noflag presentmode?
 obj general/ui/record_high_scrolloff name=record_scrolloff x=154 y=192 z=6
+label sp1$0
 
 // Change Back to Stop if we're doing a lock prompt
 set back_btn_path general/DS-PyWrightButtons/key_borderless_back
@@ -107,6 +110,7 @@ set back_btn_path general/DS-PyWrightButtons/key_borderless_stop
 flag menu_move r2_startfade
 flag menu_talk r2_startfade
 flag menu_present r2_startpresent
+flag menu_crossexam r2_startfade
 flag menu_local r2_startlocal fail=r2_startnormal
 
 // For when the text advance button
@@ -167,8 +171,10 @@ flag presented skipcloseanim
 {ANIM_RECORD_CLOSE}
 label skipcloseanim
 set _textbox_show_button true
+flag menu_crossexam skiprecordbuttonupdate
 {enable_court_record_button}
 {show_court_record_button}
+label skiprecordbuttonupdate
 {record2_finish}
 {enable_saveload}
 endmacro
@@ -178,6 +184,7 @@ macro record2_finish
 flag menu_move r2_handlemove
 flag menu_talk r2_handletalk
 flag menu_present r2_finishhandle
+flag menu_crossexam r2_finishhandle
 flag menu_local r2_handlelocal fail=r2_handlenone
 
 label r2_handlemove
@@ -248,12 +255,8 @@ endmacro
 // page number in a convenient shared var
 // for use in maths
 macro update_max_pages
-is inv_selected evidence?
-set max_pages $ev_pages
-is inv_selected profiles?
-set max_pages $pr_pages
-is inv_selected spells?
-set max_pages $sp_pages
+joinvar pagevar $inv_selected _pages
+getvar max_pages $pagevar
 endmacro
 
 
@@ -348,7 +351,7 @@ setflag shoutmode
 flag magatama_presented AND psycholock_active?
 setvar _present_shout takethat
 flag magatama_presented AND psycholock_active?
-setvar _present_char phoenix
+setvar _present_char $_current_protagonist
 flag magatama_presented AND psycholock_active?
 music none
 
@@ -356,12 +359,32 @@ music none
 is _selected badge?
 increment_stat badges
 
+// Yooo play the cool animation dude
+flag menu_crossexam?
+goto dopresent_crossexam$0
+goto dopresent_normal$0
+label dopresent_crossexam$0
+joinvar st_id st $_current_statement
+{check_evidence $st_id $_selected}
+msgwindow_qreset
+delete name=present_btn
+obj general/DS-PyWrightButtons/key_present2_high name=present_btn x=73 y=192 z=9
+{flush_record}
+delete name=prev_arrow
+"{sound none}{next}"
+{ANIM_CROSSEXAM_PRESENT $_present_char}
+delete name=present_omnibg suppress
+{unbind_record2}
+goto finishdopresent
+
+label dopresent_normal$0
 noflag shoutmode?
 sfx Confirm
 flag shoutmode?
 msgwindow_qreset
 flag shoutmode?
 shout_nowait $_present_shout $_present_char
+
 delete name=present_omnibg suppress
 {unbind_record2}
 flag bigrecord lbl_bigrecord_present
@@ -407,18 +430,23 @@ endmacro
 // Usage: get_next_inventory <resultvar> <inv_to_check>
 macro get_next_inventory
 set inv_to_check $2
-is inv_to_check evidence?
-set $1 profiles
 
-// No spells
-is inv_to_check profiles?
-set $1 evidence
+{ARRAY_GET_USED inventories _inv_size}
 
-// Spells
-//is inv_to_check profiles?
-//set $1 spells
-//is inv_to_check spells?
-//set $1 evidence
+{ARRAY_GET_IDX_OF_ITEM inventories $inv_to_check inv_idx}
+
+addvar inv_idx 1
+is_ex inv_idx > _inv_size?
+set inv_idx 1
+
+{ARRAY_GET_ITEM_BY_IDX inventories $inv_idx inv_return}
+
+set $1 $inv_return
+set inv_to_check
+set inv_size
+set inv_idx
+set inv_return
+label endmacro$0
 endmacro
 
 // Corrects the currently selected item index
@@ -658,7 +686,12 @@ isempty current_page?
 set current_page 1
 {ARRAY_GET_USED $inv_selected acc1}
 is_ex acc1 < 1?
-goto endmacro$0
+goto throwerror$0
+goto continue$0
+label throwerror$0
+set _err Fatal error: Can't render an inventory with 0 items!
+THROW_ERROR
+label continue$0
 is_ex acc1 <= 8?
 goto evi_layout_loop
 
